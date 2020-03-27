@@ -7,8 +7,8 @@ import json
 import uuid
 from heatmap import HeatmapModel
 
-ROOT = os.path.dirname(__file__)
-PORT = 8888
+ROOT = os.path.join(os.path.dirname(__file__), "static")
+PORT = 8000
 DATA_DIR = f"./data"
 
 class UploadHandler(tornado.web.RequestHandler):

@@ -38,7 +38,7 @@ class HeatmapHandler(tornado.web.RequestHandler):
     def initialize(self, heatmapModel):
         self.heatmapModel = heatmapModel
     # returns the heatmap
-    def post(self):
+    def get(self):
         response = self.heatmapModel.get_heatmap()
         self.write(json.dumps(response))
         self.finish()  # Without this the client's request will hang

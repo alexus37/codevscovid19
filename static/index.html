@@ -1,51 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="bootstrap.min.css">
-    <link rel="stylesheet" href="index.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="bootstrap.min.css" />
+    <link rel="stylesheet" href="index.css" />
     <title>Risk Map</title>
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.14/esri/themes/dark/main.css"
+    />
+    <script src="https://js.arcgis.com/4.14/"></script>
+    <script src="index.js"></script>
+  </head>
+  <body>
     <div id="root">
-        <div id="content">
-            <div id="map">
-                <img src="map_placeholder.img" alt="map">
-            </div>
-            <div id="submissions">
-                <div id="healthy-upload" class="submission">
-                    <form enctype="multipart/form-data" action="/upload" method="post" class="submission bg-secondary">
-                        <input type="file" name="filearg" class="" />
-                        <input type="checkbox" name="infected" hidden="true" />
-                        <br>
-                        <br>
-                        <input type="submit" value="upload" class="btn btn-success">
-                    </form>
-                </div>
-                <div id="infected-upload" class="submission">
-                    <form enctype="multipart/form-data" action="/upload" method="post" class="bg-secondary">
-                        <input type="file" name="filearg" class="" />
-                        <input type="checkbox" name="infected" checked hidden="true" />
-                        <br>
-                        <br>
-                        <input type="submit" value="upload" class="btn btn-danger">
-                    </form>
-                </div>
-            </div>
-            <div id="information">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec congue odio vel vehicula condimentum. Nulla aliquam imperdiet mauris, non finibus risus euismod vel. Ut nec varius odio. Aenean egestas consequat augue, quis eleifend purus finibus ornare. Suspendisse sem massa, vehicula et felis ac, lobortis dapibus quam. Morbi luctus magna turpis, ac vulputate turpis bibendum quis. Cras libero orci, rhoncus in risus ut, posuere volutpat nibh. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec in nisi mattis, scelerisque arcu vitae, eleifend eros. Nam diam libero, dictum sit amet enim non, lobortis commodo augue. Curabitur sapien libero, vestibulum in erat non, consequat sodales risus.
-
-                Praesent semper sodales lectus eget convallis. Nam eu efficitur arcu. Integer mauris nisl, laoreet eget augue a, lobortis scelerisque velit. Pellentesque pulvinar vel est eu lobortis. Nam ultricies facilisis libero at cursus. Cras molestie mi eu libero vestibulum posuere. Curabitur mi sapien, efficitur et varius eget, scelerisque non augue. Donec ultrices at lectus quis accumsan. Morbi accumsan rhoncus arcu eu imperdiet. Nunc finibus tellus sed luctus blandit. Sed porttitor tristique lectus, eu vulputate velit hendrerit ut. Etiam aliquet ante ac nibh vulputate fermentum. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Maecenas quis odio eu nisi tincidunt dapibus.
-
-                Praesent lacus enim, imperdiet non posuere sed, rutrum in metus. Donec id justo molestie augue congue iaculis. Duis a accumsan orci. Cras vitae arcu felis. Nunc facilisis erat sit amet urna porta mattis in ac dolor. Vestibulum nisl purus, molestie in feugiat quis, dictum id sem. In quis libero nibh. Quisque nec dui augue. Curabitur ligula metus, hendrerit eget fringilla bibendum, porta ac velit.
-
-                In ut lacus faucibus felis mollis auctor. Fusce elementum quam erat, semper ultricies sem viverra ut. In commodo hendrerit nunc ut aliquet. Nunc bibendum aliquam ante, in volutpat sem pulvinar non. Aliquam lobortis sapien ut erat sodales ultrices. Maecenas in ullamcorper justo. Pellentesque quis libero sed eros fringilla pellentesque. Sed in sagittis tortor.
-
-                Curabitur eget venenatis nisl. Donec malesuada viverra nibh eu mollis. Integer ornare, magna vel condimentum vulputate, mauris elit porttitor quam, eu viverra diam ex in justo. Donec volutpat finibus posuere. Etiam placerat posuere dapibus. Nunc eget velit mi. Morbi blandit, ante luctus placerat elementum, metus augue sagittis massa, aliquam rhoncus felis elit et urna. Aliquam sed nisl lectus. Sed a tincidunt mauris. Aliquam erat volutpat.
-            </div>
+      <div id="content">
+        <h1>Risk map</h1>
+        <div id="map"></div>
+        <div id="submissions">
+          <div id="healthy-upload" class="submission">
+            <form
+              enctype="multipart/form-data"
+              action="/upload"
+              method="post"
+              class="submission bg-secondary"
+            >
+              <input type="file" name="filearg" class="" />
+              <input type="checkbox" name="infected" hidden="true" />
+              <br />
+              <br />
+              <input type="submit" value="upload" class="btn btn-success" />
+            </form>
+          </div>
+          <div id="infected-upload" class="submission">
+            <form
+              enctype="multipart/form-data"
+              action="/upload"
+              method="post"
+              class="bg-secondary"
+            >
+              <input type="file" name="filearg" class="" />
+              <input type="checkbox" name="infected" checked hidden="true" />
+              <br />
+              <br />
+              <input type="submit" value="upload" class="btn btn-danger" />
+            </form>
+          </div>
         </div>
+        <div id="information">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec congue
+          odio vel vehicula condimentum. Nulla aliquam imperdiet mauris, non
+          finibus risus euismod vel. Ut nec varius odio. Aenean egestas
+          consequat augue, quis eleifend purus finibus ornare. Suspendisse sem
+          massa, vehicula et felis ac, lobortis dapibus quam. Morbi luctus magna
+          turpis, ac vulputate turpis bibendum quis. Cras libero orci, rhoncus
+          in risus ut, posuere volutpat nibh. Vestibulum ante ipsum primis in
+          faucibus orci luctus et ultrices posuere cubilia Curae; Donec in nisi
+          mattis, scelerisque arcu vitae, eleifend eros. Nam diam libero, dictum
+          sit amet enim non, lobortis commodo augue. Curabitur sapien libero,
+          vestibulum in erat non, consequat sodales risus. Praesent semper
+          sodales lectus eget convallis. Nam eu efficitur arcu. Integer mauris
+          nisl, laoreet eget augue a, lobortis scelerisque velit. Pellentesque
+          pulvinar vel est eu lobortis. Nam ultricies facilisis libero at
+          cursus. Cras molestie mi eu libero vestibulum posuere. Curabitur mi
+          sapien, efficitur et varius eget, scelerisque non augue. Donec
+          ultrices at lectus quis accumsan. Morbi accumsan rhoncus arcu eu
+          imperdiet. Nunc finibus tellus sed luctus blandit. Sed porttitor
+          tristique lectus, eu vulputate velit hendrerit ut. Etiam aliquet ante
+          ac nibh vulputate fermentum. Orci varius natoque penatibus et magnis
+          dis parturient montes, nascetur ridiculus mus. Maecenas quis odio eu
+          nisi tincidunt dapibus. Praesent lacus enim, imperdiet non posuere
+          sed, rutrum in metus. Donec id justo molestie augue congue iaculis.
+          Duis a accumsan orci. Cras vitae arcu felis. Nunc facilisis erat sit
+          amet urna porta mattis in ac dolor. Vestibulum nisl purus, molestie in
+          feugiat quis, dictum id sem. In quis libero nibh. Quisque nec dui
+          augue. Curabitur ligula metus, hendrerit eget fringilla bibendum,
+          porta ac velit. In ut lacus faucibus felis mollis auctor. Fusce
+          elementum quam erat, semper ultricies sem viverra ut. In commodo
+          hendrerit nunc ut aliquet. Nunc bibendum aliquam ante, in volutpat sem
+          pulvinar non. Aliquam lobortis sapien ut erat sodales ultrices.
+          Maecenas in ullamcorper justo. Pellentesque quis libero sed eros
+          fringilla pellentesque. Sed in sagittis tortor. Curabitur eget
+          venenatis nisl. Donec malesuada viverra nibh eu mollis. Integer
+          ornare, magna vel condimentum vulputate, mauris elit porttitor quam,
+          eu viverra diam ex in justo. Donec volutpat finibus posuere. Etiam
+          placerat posuere dapibus. Nunc eget velit mi. Morbi blandit, ante
+          luctus placerat elementum, metus augue sagittis massa, aliquam rhoncus
+          felis elit et urna. Aliquam sed nisl lectus. Sed a tincidunt mauris.
+          Aliquam erat volutpat.
+        </div>
+      </div>
     </div>
-    </div>
-</body>
+  </body>
 </html>

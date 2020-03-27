@@ -7,27 +7,6 @@ require([
   // or a proxy is required.
   const url = `${location.href}/heatmap`;
 
-  // Paste the url into a browser's address bar to download and view the attributes
-  // in the GeoJSON file. These attributes include:
-  // * mag - magnitude
-  // * type - earthquake or other event such as nuclear test
-  // * place - location of the event
-  // * time - the time of the event
-  // Use the Arcade Date() function to format time field into a human-readable format
-
-  //   const template = {
-  //     title: "Earthquake Info",
-  //     content: "Magnitude {mag} {type} hit {place} on {time}",
-  //     fieldInfos: [
-  //       {
-  //         fieldName: "time",
-  //         format: {
-  //           dateFormat: "short-date-short-time"
-  //         }
-  //       }
-  //     ]
-  //   };
-
   const renderer = {
     type: "heatmap",
     field: "mag",
@@ -39,12 +18,14 @@ require([
       { ratio: 1, color: "rgba(255, 0, 0, 1)" }
     ],
     minPixelIntensity: 0,
-    maxPixelIntensity: 5000
+    maxPixelIntensity: 10
   };
 
   const geojsonLayer = new GeoJSONLayer({
     url: url,
-    renderer: renderer //optional
+    renderer: renderer,
+    labelsVisible: false,
+    labelingInfo: []
   });
 
   const map = new Map({

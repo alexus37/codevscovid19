@@ -1,5 +1,8 @@
 import json
 
+#HEATMAP_FILE = 'template_heatmap.json'
+HEATMAP_FILE = 'simple_heatmap.json'
+
 class HeatmapModel():
     def __init__(self, database):
         super().__init__()
@@ -11,7 +14,7 @@ class HeatmapModel():
     def get_heatmap(self):
         # this is just an example I would require a similar layout
 
-        with open('template_heatmap.json', 'r') as f:
+        with open(HEATMAP_FILE, 'r') as f:
             heatmap = json.load(f)
         return heatmap
 

@@ -19,7 +19,7 @@ class UploadHandler(tornado.web.RequestHandler):
         infected = self.get_body_argument("infected", default=False)
         print(f"fileinfo is {trajectory}")
         print(f"Is infected: {infected}")
-        if infected:
+        if not infected:
             response = get_risk_info(trajectory, database)
         else:
             database.append(trajectory)

@@ -19,7 +19,6 @@ class UploadHandler(tornado.web.RequestHandler):
         trajectory_json = trajectory.decode('utf8').replace("'", '"')
         trajectory_json = json.loads(trajectory_json)
         infected = self.get_body_argument("infected", default=False)
-        print(f"fileinfo is {trajectory}")
         print(f"Is infected: {infected}")
         if not infected:
             response = self.heatmapModel.get_risk_info(trajectory_json)

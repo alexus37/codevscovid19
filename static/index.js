@@ -639,6 +639,16 @@ require([
     zoom: 14,
     map: map
   });
+  const uiHandler = response => {
+    document.getElementById("join").style.display = "None";
+    document.getElementById("submissions").style.display = "None";
+    if (response.message) {
+      document.getElementById("thanksMessage").style.display = "block";
+    }
+    if (response.risk_value) {
+      document.getElementById("risk").style.display = "block";
+    }
+  };
 
   var healthyDropzone = new Dropzone("#healthy-dropzone", {
     url: "/upload"
@@ -651,10 +661,12 @@ require([
     console.log("Great success.");
     var resObject = JSON.parse(res);
     updateTrajectory(resObject.trajectory);
+    uiHandler(resObject.response);
   });
 
-  infectedDropzone.on("succes", function(file, res) {
+  infectedDropzone.on("success", function(file, res) {
     var resObject = JSON.parse(res);
     updateTrajectory(resObject.trajectory);
+    uiHandler(resObject.response);
   });
 });

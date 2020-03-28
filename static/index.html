@@ -22,7 +22,7 @@
                 <div id="healthy-upload" class="submission">
                     <form action="/upload" class="dropzone" id="healthy-dropzone">
                         <input type="file" name="filearg" hidden="true" />
-                        <input type="checkbox" name="infected" value="false" hidden="true" />
+                        <input type="checkbox" name="infected"  hidden="true" />
                         <div class="dz-message">Drop history of infected person here.</div>
                     </form>
                 </div>
@@ -32,7 +32,7 @@
                         action="/upload"
                         method="post">
                         <input type="file" name="filearg" hidden="true" />
-                        <input type="checkbox" name="infected" value="true" hidden="true" />
+                        <input type="checkbox" name="infected" checked hidden="true" />
                         <div class="dz-message">Drop history of healthy person here.</div>
                     </form>
                 </div>

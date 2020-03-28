@@ -129,9 +129,7 @@ class HeatmapModel():
 
         heatmap = {
             "type": "FeatureCollection",
-            "features": [
-                feature_list
-            ]
+            "features": feature_list
         }
         print("Heatmap samples returned")
         return heatmap

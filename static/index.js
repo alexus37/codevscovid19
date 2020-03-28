@@ -678,10 +678,10 @@ require([
     document.getElementById("submissions").style.display = "None";
     document.getElementById("map").classList.add("map-post");
     document.getElementById("map").classList.remove("map-pre");
-    if (response.message) {
+    if (response.message !== undefined) {
       document.getElementById("thanksMessage").style.display = "block";
     }
-    if (response.risk_value) {
+    if (response.risk_value !== undefined) {
       document.getElementById("risk").style.display = "block";
       document.getElementById(
         "riskValue"

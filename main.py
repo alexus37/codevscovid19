@@ -15,7 +15,7 @@ class UploadHandler(tornado.web.RequestHandler):
     def initialize(self, heatmapModel):
         self.heatmapModel = heatmapModel
     def post(self):
-        trajectory = self.request.files['filearg'][0]['body']
+        trajectory = self.request.files['file'][0]['body']
         trajectory_json = trajectory.decode('utf8').replace("'", '"')
         trajectory_json = json.loads(trajectory_json)
         infected = self.get_body_argument("infected", default=False)

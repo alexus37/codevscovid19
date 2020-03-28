@@ -39,4 +39,11 @@ require([
     zoom: 14,
     map: map
   });
+
+  Dropzone.options.healthyDropzone = {
+      init: function() {
+          this.on("addedFile", function(file) { console.log("added file") });
+          this.on("success", function(file) { console.log("success") });
+      }
+  }
 });

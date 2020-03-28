@@ -9,6 +9,8 @@ from tqdm import tqdm
 import random
 import os
 import pickle as pkl
+import pandas
+import datetime
 
 #HEATMAP_FILE = 'template_heatmap.json'
 HEATMAP_FILE = 'simple_heatmap.json'
@@ -23,9 +25,6 @@ def open_sample_heatmap():
 
 
 def open_sample_dataset():
-    import pandas
-    import datetime
-
     dataframe = pandas.read_csv('zurich_dataset.csv')
     array = dataframe.to_numpy()
     lat = array[:, 1]
@@ -39,7 +38,14 @@ def open_sample_dataset():
     time = dataframe['time'].values.astype(float)
     return [lat, long, time]
 
-
+def find_place_by_id(id, track):
+    for traj_entery in tqdm(track):
+        if "placeVisit" in traj_entery and "location" in traj_entery["placeVisit"]:
+            place = traj_entery["placeVisit"]["location"]
+            if place["placeId"] == id:
+                return place
+    print("ERROR: Place not found")
+    return None
 class HeatmapModel():
     def __init__(self, database=None):
         super().__init__()
@@ -55,6 +61,7 @@ class HeatmapModel():
         self.aggregator = TimeSmoothAggregatorKernelDensity()
         self.X[:, 2] = 0  # discard time
         self.aggregator.update(self.X)
+        self.heatmap_sample_cnt = 10
 
     def track2matrix(self, track):
         point_list = []
@@ -64,38 +71,37 @@ class HeatmapModel():
         p_ll = pyproj.Proj(init='epsg:4326')
         p_mt = pyproj.Proj(init='epsg:3857') # metric; same as EPSG:900913
         print("Parsing files into matrix")
-        for trajectory in tqdm(track):
-            for traj_entery in trajectory["timelineObjects"]:
-                # only use lines so far
-                if "activitySegment" in traj_entery and "simplifiedRawPath" in traj_entery["activitySegment"]:
-                    for point in traj_entery["activitySegment"]["simplifiedRawPath"]["points"]:
-                        s_point = shapely.geometry.Point((
-                            point["latE7"] / 10000000,
-                            point["lngE7"] / 10000000
-                        ))
-
-                        # Project corners to target projection
-                        s_point = pyproj.transform(p_ll, p_mt, s_point.x, s_point.y) # Transform NW point to 3857
-                        point_list.append([
-                            s_point[0],
-                            s_point[1],
-                            point["timestampMs"]
-                        ])
-                if "placeVisit" in traj_entery and "location" in traj_entery["placeVisit"]:
-                    point = traj_entery["placeVisit"]["location"]
+        for traj_entery in tqdm(track["timelineObjects"]):
+            # only use lines so far
+            if "activitySegment" in traj_entery and "simplifiedRawPath" in traj_entery["activitySegment"]:
+                for point in traj_entery["activitySegment"]["simplifiedRawPath"]["points"]:
                     s_point = shapely.geometry.Point((
-                        point["latitudeE7"] / 10000000,
-                        point["longitudeE7"] / 10000000
+                        point["latE7"] / 10000000,
+                        point["lngE7"] / 10000000
                     ))
 
                     # Project corners to target projection
                     s_point = pyproj.transform(p_ll, p_mt, s_point.x, s_point.y) # Transform NW point to 3857
-                    place_location_list.append([
+                    point_list.append([
                         s_point[0],
                         s_point[1],
-                        0
+                        point["timestampMs"]
                     ])
-                    place_id_list.append(point["placeId"])
+            if "placeVisit" in traj_entery and "location" in traj_entery["placeVisit"]:
+                point = traj_entery["placeVisit"]["location"]
+                s_point = shapely.geometry.Point((
+                    point["latitudeE7"] / 10000000,
+                    point["longitudeE7"] / 10000000
+                ))
+
+                # Project corners to target projection
+                s_point = pyproj.transform(p_ll, p_mt, s_point.x, s_point.y) # Transform NW point to 3857
+                place_location_list.append([
+                    s_point[0],
+                    s_point[1],
+                    0
+                ])
+                place_id_list.append(point["placeId"])
 
         self.heat_matrix = np.array(point_list)
         print(f"self.heat_matrix.shape = {self.heat_matrix.shape}")
@@ -111,7 +117,7 @@ class HeatmapModel():
 
     def get_heatmap(self):
         print("Retrieving heatmap samples")
-        samples_locations, sample_scores = self.aggregator.sample_heatmap(1000)
+        samples_locations, sample_scores = self.aggregator.sample_heatmap(self.heatmap_sample_cnt)
         feature_list = []
         lat, long = meters2latlong_zurich(samples_locations[:, 0], samples_locations[:, 1])
         time =  samples_locations[:, 2]
@@ -138,40 +144,28 @@ class HeatmapModel():
     # database: [traj0, traj1, ..., trajn]
 
     def get_risk_info(self, trajectory):
-        X_track = self.track2matrix(trajectory)[0]
-        total_score, likelihoods, sorted_indices = self.aggregator.get_infection_likelihood(X_track)
+        X_track, X_Places, place_id = self.track2matrix(trajectory)
+        print(X_track.shape)
+        total_score, _, _ = self.aggregator.get_infection_likelihood(X_track)
+        _, likelihoods, sorted_indices = self.aggregator.get_infection_likelihood(X_Places)
+        most_risky_places = []
 
+        i = 0
+        for index in sorted_indices:
+            place = find_place_by_id(place_id[index])
+            most_risky_places.append({
+                **place,
+                "risk_value": likelihoods[index]
+            })
+            i += 1
+            if i == 3:
+                break
         # risk value come from the tracks the person took
         # most_risky_places is just the places with the highest risk values
         # maybe just the places in the trajectory and in the sick db
         response = {
             'risk_value': total_score,
-            'most_risky_places': [
-                {
-                    "latitudeE7": 473743221,
-                    "longitudeE7": 85509812,
-                    "placeId": "ChIJi4WVWJ-gmkcRz9p-0FL6ULo",
-                    "address": "Rämistrasse 71\n8006 Zürich\nSchweiz",
-                    "name": "University of Zurich",
-                    "risk_value": 0.98
-                },
-                {
-                    "latitudeE7": 473657945,
-                    "longitudeE7": 85477139,
-                    "placeId": "ChIJ0awoNlOnmkcRcPkN_XiQfz0",
-                    "address": "Goethestrasse 14\n8001 Zürich\nSchweiz",
-                    "name": "Arzthaus Zürich Stadelhofen",
-                    "risk_value": 0.86
-                },
-                {
-                    "latitudeE7": 473882334,
-                    "longitudeE7": 85180000,
-                    "placeId": "ChIJVVWVpkAKkEcRYMSNQ2QmY-Y",
-                    "address": "Pfingstweidstrasse 16\n8005 Zürich\nSchweiz",
-                    "name": "Kulturpark",
-                    "risk_value": 0.67
-                }
-            ]
+            'most_risky_places': most_risky_places
         }
         # self.update_database(trajectory)
         return response

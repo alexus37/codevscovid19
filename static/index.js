@@ -1,7 +1,7 @@
 require([
   "esri/Map",
   "esri/layers/GeoJSONLayer",
-  "esri/views/MapView"
+  "esri/views/MapView",
 ], function(Map, GeoJSONLayer, MapView) {
   // If GeoJSON files are not on the same domain as your website, a CORS enabled server
   // or a proxy is required.
@@ -39,11 +39,21 @@ require([
     zoom: 14,
     map: map
   });
-
-  Dropzone.options.healthyDropzone = {
-      init: function() {
-          this.on("addedFile", function(file) { console.log("added file") });
-          this.on("success", function(file) { console.log("success") });
-      }
-  }
 });
+
+Dropzone.options.healthyDropzone = {
+  init: function() {
+    this.on("addedfile", function(file) { 
+      console.log("added file");
+    });
+    this.on("success", function(file) { console.log("success") });
+  }
+}
+
+Dropzone.options.infectedDropzone = {
+  init: function() {
+    this.on("success", function(file) { 
+      console.log("Great success.")
+     });
+  }
+}

@@ -37,7 +37,11 @@ body {
     width: 400px;
 }
 
-.dropzone .dz-preview {
-    width: 100px;
-    height: 100px;
-  }
+.dz-image {
+    width: 50px;
+    height: 50px;
+}
+
+.dz-image {
+    display: none !important;
+}

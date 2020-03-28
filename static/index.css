@@ -17,11 +17,19 @@ body {
 #map {
   display: flex;
   width: 100%;
-  height: calc(100vh - 150px);
-  height: -webkit-calc(100vh - 150px);
-  /* height: 400px; */
   padding: 0;
   margin: 0;
+  transition: height 1s ease-in-out;
+}
+
+.map-pre {
+  height: calc(100vh - 150px);
+  height: -webkit-calc(100vh - 150px);
+}
+
+.map-post {
+  height: calc(100vh - 346px);
+  height: -webkit-calc(100vh - 346px);
 }
 
 #submissions {
@@ -85,6 +93,11 @@ body {
 
 #risk {
   display: none;
+  /* margin-left: 50px;
+  margin-right: 50px;
+  margin-bottom: 50px;
+  margin-top: 30px; */
+  margin: 50px;
 }
 
 #thanksMessage {

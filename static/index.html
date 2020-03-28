@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="bootstrap.min.css">
+    <link rel="stylesheet" href="dropzone.css">
     <link rel="stylesheet" href="index.css">
     <title>Risk Map</title>
 </head>
@@ -15,21 +16,20 @@
             </div>
             <div id="submissions">
                 <div id="healthy-upload" class="submission">
-                    <form enctype="multipart/form-data" action="/upload" method="post" class="submission bg-secondary">
-                        <input type="file" name="filearg" class="" />
-                        <input type="checkbox" name="infected" value="true" hidden="true" />
-                        <br>
-                        <br>
-                        <input type="submit" value="upload" class="btn btn-success">
+                    <form action="/upload" class="dropzone" id="healthy-dropzone">
+                        <input type="file" name="filearg" hidden="true" />
+                        <input type="checkbox" name="infected" value="false" hidden="true" />
+                        <div class="dz-message">Drop history of infected person here.</div>
                     </form>
                 </div>
                 <div id="infected-upload" class="submission">
-                    <form enctype="multipart/form-data" action="/upload" method="post" class="bg-secondary">
-                        <input type="file" name="filearg" class="" />
-                        <input type="checkbox" name="infected" value="false" hidden="true" />
-                        <br>
-                        <br>
-                        <input type="submit" value="upload" class="btn btn-danger">
+                    <form id="infected-dropzone"
+                        class="dropzone"  
+                        action="/upload"
+                        method="post">
+                        <input type="file" name="filearg" hidden="true" />
+                        <input type="checkbox" name="infected" value="true" hidden="true" />
+                        <div class="dz-message">Drop history of healthy person here.</div>
                     </form>
                 </div>
             </div>
@@ -47,5 +47,7 @@
         </div>
     </div>
     </div>
+    <script src="dropzone.js"></script>
+    <script src="index.js"></script>
 </body>
 </html>

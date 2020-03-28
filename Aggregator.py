@@ -115,7 +115,7 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
     def get_infection_likelihood(self, X_track):
         X_track = self._unscale_input(X_track)
         # self.aggregator = KernelDensity()
-        likelihoods = np.exp(self.aggregator.score(X_track))
+        likelihoods = np.exp(self.aggregator.score_samples(X_track))
 
         total_score = np.sum(likelihoods)
         order = np.argsort(likelihoods)
@@ -228,6 +228,7 @@ if __name__ == "__main__":
     bandwidth = 50.
     aggregator = TimeSmoothAggregatorKernelDensity(bandwidth=bandwidth)
     aggregator.update(X)
+    total_score, likelihoods, sorted_indices = aggregator.get_infection_likelihood(X[:50])
     heatmap_samples, heatmap_scores = aggregator.sample_heatmap(num_samples=1000)
     aggregator.plot()
 

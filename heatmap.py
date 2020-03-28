@@ -9,8 +9,8 @@ from tqdm import tqdm
 import random
 
 #HEATMAP_FILE = 'template_heatmap.json'
-#HEATMAP_FILE = 'simple_heatmap.json'
-HEATMAP_FILE = 'restaurant_heatmap.json'
+HEATMAP_FILE = 'simple_heatmap.json'
+#HEATMAP_FILE = 'restaurant_heatmap.json'
 
 
 def open_sample_heatmap():
@@ -114,26 +114,25 @@ class HeatmapModel():
         sample_heatmap = open_sample_heatmap()
         samples_locations, sample_scores = self.aggregator.sample_heatmap(100)
         feature_list = []
-
         lat, long = meters2latlong_zurich(samples_locations[:, 0], samples_locations[:, 1])
         time =  samples_locations[:, 2]
 
         for i in range(sample_scores.shape[0]):
             feature_list += [{
-                    "type" : "Feature",
-                    "properties": {"mag": random.random(), "time": time[i]},
+                    "type": "Feature",
+                    "properties": {"mag": random.randint(0, 100), "time": time[i]},
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [long[i], lat[i], time[i]]
+                        "coordinates": [long[i], lat[i], 0]
                     }
             }]
 
         heatmap = {
             "type": "FeatureCollection",
-            "features": [
-                feature_list
-            ]
+            "features": feature_list
         }
+        with open(HEATMAP_FILE, 'r') as f:
+            heatmap = json.load(f)
         print("Heatmap samples returned")
         return heatmap
 

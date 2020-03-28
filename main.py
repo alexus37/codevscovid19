@@ -48,6 +48,7 @@ class HeatmapHandler(tornado.web.RequestHandler):
 
     def get(self):
         response = self.heatmapModel.get_heatmap()
+        json.encoder.FLOAT_REPR = lambda x: format(x, '.5f')
         self.write(json.dumps(response))
         self.finish()  # Without this the client's request will hang
 

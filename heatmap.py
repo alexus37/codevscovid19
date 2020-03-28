@@ -120,7 +120,7 @@ class HeatmapModel():
         for i in range(sample_scores.shape[0]):
             feature_list += [{
                     "type": "Feature",
-                    "properties": {"mag": random.randint(0, 100), "time": time[i]},
+                    "properties": {"mag": random.random(), "time": time[i]},
                     "geometry": {
                         "type": "Point",
                         "coordinates": [long[i], lat[i], 0]
@@ -131,8 +131,6 @@ class HeatmapModel():
             "type": "FeatureCollection",
             "features": feature_list
         }
-        with open(HEATMAP_FILE, 'r') as f:
-            heatmap = json.load(f)
         print("Heatmap samples returned")
         return heatmap
 

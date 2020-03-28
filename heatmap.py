@@ -46,6 +46,8 @@ def find_place_by_id(id, track):
                 return place
     print("ERROR: Place not found")
     return None
+
+
 class HeatmapModel():
     def __init__(self, database=None):
         super().__init__()
@@ -83,9 +85,9 @@ class HeatmapModel():
                     # Project corners to target projection
                     s_point = pyproj.transform(p_ll, p_mt, s_point.x, s_point.y) # Transform NW point to 3857
                     point_list.append([
-                        s_point[0],
-                        s_point[1],
-                        point["timestampMs"]
+                        float(s_point[0]),
+                        float(s_point[1]),
+                        float(point["timestampMs"])
                     ])
             if "placeVisit" in traj_entery and "location" in traj_entery["placeVisit"]:
                 point = traj_entery["placeVisit"]["location"]
@@ -97,15 +99,15 @@ class HeatmapModel():
                 # Project corners to target projection
                 s_point = pyproj.transform(p_ll, p_mt, s_point.x, s_point.y) # Transform NW point to 3857
                 place_location_list.append([
-                    s_point[0],
-                    s_point[1],
-                    0
+                    float(s_point[0]),
+                    float(s_point[1]),
+                    0.0
                 ])
                 place_id_list.append(point["placeId"])
 
         self.heat_matrix = np.array(point_list)
         print(f"self.heat_matrix.shape = {self.heat_matrix.shape}")
-        return np.array(point_list), np.array(place_location_list), place_id_list
+        return np.array(point_list, dtype=np.float64), np.array(place_location_list, dtype=np.float64), place_id_list
 
 
     def update_database(self, trajectory):

@@ -647,6 +647,31 @@ require([
     }
     if (response.risk_value) {
       document.getElementById("risk").style.display = "block";
+      document.getElementById(
+        "riskValue"
+      ).innerHTML = response.risk_value.toFixed(2);
+      const tbody = document.getElementById("riskPlaces");
+      tbody.innerHTML = ""; // clear
+      response.most_risky_places.forEach((element, index) => {
+        const tr = document.createElement("tr");
+        const th = document.createElement("th", { scope: "row" });
+        th.innerHTML = index;
+        tr.appendChild(th);
+
+        let td = document.createElement("td");
+        td.innerHTML = element.name;
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerHTML = element.address;
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerHTML = element.risk_value;
+        tr.appendChild(td);
+
+        tbody.appendChild(tr);
+      });
     }
   };
 

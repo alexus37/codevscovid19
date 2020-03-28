@@ -502,6 +502,10 @@ require([
     if (placeVisitsLayer) {
       map.remove(placeVisitsLayer);
     }
+    const template = {
+      // autocasts as new PopupTemplate()
+      title: "Place: {NAME}"
+    };
     placeVisitsLayer = new FeatureLayer({
       // URL to the service
       source: places,
@@ -512,7 +516,7 @@ require([
           type: "oid"
         },
         {
-          name: "url",
+          name: "NAME",
           type: "string"
         }
       ],
@@ -524,9 +528,11 @@ require([
           color: [0, 255, 255],
           outline: null
         }
-      }
+      },
+      outFields: ["*"],
+      popupTemplate: template
     });
-    map.layers.add(placeVisitsLayer);
+    map.add(placeVisitsLayer);
   };
 
   const addActivitySegment = graphics => {
@@ -639,6 +645,33 @@ require([
     zoom: 14,
     map: map
   });
+
+  const addLegend = () => {
+    // get the first layer in the collection of operational layers in the WebMap
+    // when the resources in the MapView have loaded.
+
+    var legend = new Legend({
+      view: view,
+      layerInfos: [
+        {
+          layer: geojsonLayer,
+          title: "Risk"
+        },
+        {
+          layer: activitySegmentsLayerPath,
+          title: "Trajectories"
+        },
+        {
+          layer: placeVisitsLayer,
+          title: "Visited places"
+        }
+      ]
+    });
+
+    // Add widget to the bottom right corner of the view
+    view.ui.add(legend, "bottom-right");
+  };
+
   const uiHandler = response => {
     document.getElementById("join").style.display = "None";
     document.getElementById("submissions").style.display = "None";
@@ -647,7 +680,33 @@ require([
     }
     if (response.risk_value) {
       document.getElementById("risk").style.display = "block";
+      document.getElementById(
+        "riskValue"
+      ).innerHTML = response.risk_value.toFixed(2);
+      const tbody = document.getElementById("riskPlaces");
+      tbody.innerHTML = ""; // clear
+      response.most_risky_places.forEach((element, index) => {
+        const tr = document.createElement("tr");
+        const th = document.createElement("th", { scope: "row" });
+        th.innerHTML = index;
+        tr.appendChild(th);
+
+        let td = document.createElement("td");
+        td.innerHTML = element.name;
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerHTML = element.address;
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerHTML = element.risk_value;
+        tr.appendChild(td);
+
+        tbody.appendChild(tr);
+      });
     }
+    addLegend();
   };
 
   var healthyDropzone = new Dropzone("#healthy-dropzone", {

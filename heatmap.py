@@ -1,4 +1,8 @@
 import json
+import shapely.geometry
+import pyproj
+import numpy as np
+from tqdm import tqdm
 
 #HEATMAP_FILE = 'template_heatmap.json'
 #HEATMAP_FILE = 'simple_heatmap.json'
@@ -8,6 +12,32 @@ class HeatmapModel():
     def __init__(self, database):
         super().__init__()
         self.database = database
+
+        point_list = []
+        # Set up projections
+        p_ll = pyproj.Proj(init='epsg:4326')
+        p_mt = pyproj.Proj(init='epsg:3857') # metric; same as EPSG:900913
+        print("Parsing files into matrix")
+        for trajectory in tqdm(database):
+            for traj_entery in trajectory["timelineObjects"]:
+                # only use lines so far
+                if "activitySegment" in traj_entery and "simplifiedRawPath" in traj_entery["activitySegment"]:
+                    for point in traj_entery["activitySegment"]["simplifiedRawPath"]["points"]:
+                        s_point = shapely.geometry.Point((
+                            point["latE7"] / 10000000,
+                            point["lngE7"] / 10000000
+                        ))
+
+                        # Project corners to target projection
+                        s_point = pyproj.transform(p_ll, p_mt, s_point.x, s_point.y) # Transform NW point to 3857
+                        point_list.append([
+                            s_point[0],
+                            s_point[1],
+                            point["timestampMs"]
+                        ])
+        self.heat_matrix = np.array(point_list)
+        print(f"self.heat_matrix.shape = {self.heat_matrix.shape}")
+
 
     def update_database(self, trajectory):
         self.database.append(trajectory)

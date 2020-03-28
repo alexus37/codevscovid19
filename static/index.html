@@ -50,7 +50,7 @@
             </div>
             <div id="risk">
                 <div id="riskContainer">
-                    <h1>RISK FACTOR:</h1> <h1>0.93</h1>
+                    <h1>RISK FACTOR:</h1> <h1 id="riskValue">0.0</h1>
                 </div>
                 <div>
                     <p>
@@ -59,7 +59,7 @@
                 </div>
                 <div id="information">
                     <h3>Most risky places visited</h3>
-                    <table class="table-dark tableFullWidth">
+                    <table class="table-dark tableFullWidth" id="riskPlacesTable">
                         <thead>
                           <tr>
                             <th scope="col">#</th>
@@ -68,25 +68,8 @@
                             <th scope="col">Risk value</th>
                           </tr>
                         </thead>
-                        <tbody>
-                          <tr>
-                            <th scope="row">1</th>
-                            <td>University of Zurich</td>
-                            <td>Rämistrasse 71 8006 Zürich Schweiz</td>
-                            <td>0.97</td>
-                          </tr>
-                          <tr>
-                            <th scope="row">2</th>
-                            <td>Arzthaus Zürich Stadelhofen</td>
-                            <td>Goethestrasse 14 8001 Zürich Schweiz</td>
-                            <td>0.85</td>
-                          </tr>
-                          <tr>
-                            <th scope="row">3</th>
-                            <td>Kulturpark</td>
-                            <td>Pfingstweidstrasse 16 8005 Zürich Schweiz</td>
-                            <td>0.67</td>
-                          </tr>
+                        <tbody id="riskPlaces">
+
                         </tbody>
                       </table>
                 </div>

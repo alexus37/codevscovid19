@@ -152,7 +152,7 @@ class HeatmapModel():
 
         i = 0
         for index in sorted_indices:
-            place = find_place_by_id(place_id[index])
+            place = find_place_by_id(place_id[index], trajectory)
             most_risky_places.append({
                 **place,
                 "risk_value": likelihoods[index]

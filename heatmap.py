@@ -6,6 +6,7 @@ from Aggregator import TimeSmoothAggregatorKernelDensity
 import numpy as np
 from query_gmaps_places import latlong2meters_zurich, meters2latlong_zurich
 from tqdm import tqdm
+import random
 
 #HEATMAP_FILE = 'template_heatmap.json'
 #HEATMAP_FILE = 'simple_heatmap.json'
@@ -120,7 +121,7 @@ class HeatmapModel():
         for i in range(sample_scores.shape[0]):
             feature_list += [{
                     "type" : "Feature",
-                    "properties": {"mag": 100., "time": time[i]},
+                    "properties": {"mag": random.random(), "time": time[i]},
                     "geometry": {
                         "type": "Point",
                         "coordinates": [long[i], lat[i], time[i]]

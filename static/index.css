@@ -29,5 +29,15 @@ body {
 }
 
 .submission {
-  width: 400px;
+    width: 400px;
+    height: 200px;
 }
+
+.dropzone {
+    width: 400px;
+}
+
+.dropzone .dz-preview {
+    width: 100px;
+    height: 100px;
+  }

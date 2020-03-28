@@ -119,8 +119,8 @@ class HeatmapModel():
 
         for i in range(sample_scores.shape[0]):
             feature_list += [{
-                    "type" : "Feature",
-                    "properties": {"mag": 100., "time": time[i]},
+                    "type": "Feature",
+                    "properties": {"mag": sample_scores[i], "time": time[i]},
                     "geometry": {
                         "type": "Point",
                         "coordinates": [long[i], lat[i], time[i]]

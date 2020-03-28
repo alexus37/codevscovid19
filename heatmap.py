@@ -79,6 +79,8 @@ class HeatmapModel():
 
     def track2matrix(self, track):
         point_list = []
+        place_location_list = []
+        place_id_list = []
         # Set up projections
         p_ll = pyproj.Proj(init='epsg:4326')
         p_mt = pyproj.Proj(init='epsg:3857') # metric; same as EPSG:900913
@@ -100,8 +102,26 @@ class HeatmapModel():
                             s_point[1],
                             point["timestampMs"]
                         ])
+                if "placeVisit" in traj_entery and "location" in traj_entery["placeVisit"]:
+                    point = traj_entery["placeVisit"]["location"]
+                    s_point = shapely.geometry.Point((
+                        point["latitudeE7"] / 10000000,
+                        point["longitudeE7"] / 10000000
+                    ))
+
+                    # Project corners to target projection
+                    s_point = pyproj.transform(p_ll, p_mt, s_point.x, s_point.y) # Transform NW point to 3857
+                    place_location_list.append([
+                        s_point[0],
+                        s_point[1],
+                        0
+                    ])
+                    place_id_list.append(point["placeId"])
+
         self.heat_matrix = np.array(point_list)
         print(f"self.heat_matrix.shape = {self.heat_matrix.shape}")
+        return np.array(point_list), np.array(place_location_list), place_id_list
+
 
     def update_database(self, trajectory):
         self.database.append(trajectory)

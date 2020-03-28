@@ -38,6 +38,7 @@ def open_sample_dataset():
     # with open('zurich_dataset.csv' ,'r') as f:
     #     csv_reader = csv.reader(f, delimiter=',')
 
+
 class HeatmapModel():
     def __init__(self, database):
         super().__init__()
@@ -76,12 +77,13 @@ class HeatmapModel():
         x, y = latlong2meters_zurich(database[0][0][:2000], database[0][1][:2000])
         return np.array([x, y, database[0][2][:2000]]).T
 
+    def track2matrix(self, track):
         point_list = []
         # Set up projections
         p_ll = pyproj.Proj(init='epsg:4326')
         p_mt = pyproj.Proj(init='epsg:3857') # metric; same as EPSG:900913
         print("Parsing files into matrix")
-        for trajectory in tqdm(database):
+        for trajectory in tqdm(track):
             for traj_entery in trajectory["timelineObjects"]:
                 # only use lines so far
                 if "activitySegment" in traj_entery and "simplifiedRawPath" in traj_entery["activitySegment"]:
@@ -101,18 +103,17 @@ class HeatmapModel():
         self.heat_matrix = np.array(point_list)
         print(f"self.heat_matrix.shape = {self.heat_matrix.shape}")
 
-
     def update_database(self, trajectory):
         self.database.append(trajectory)
         if len(self.database) > 0:
-            X = self.database2matrix(self.database)
+            X = self.track2matrix(trajectory)
             X[:, 2] = 0 # discard time
             self.aggregator.update(X)
 
     def get_heatmap(self):
         print("Retrieving heatmap samples")
         sample_heatmap = open_sample_heatmap()
-        samples_locations, sample_scores = self.aggregator.sample_heatmap(100)
+        samples_locations, sample_scores = self.aggregator.sample_heatmap(1000)
         feature_list = []
         lat, long = meters2latlong_zurich(samples_locations[:, 0], samples_locations[:, 1])
         time =  samples_locations[:, 2]
@@ -131,6 +132,9 @@ class HeatmapModel():
             "type": "FeatureCollection",
             "features": feature_list
         }
+        # from json import encoder
+        json.encoder.FLOAT_REPR = lambda o: format(o, '.2f')
+        print(json.dumps(heatmap))
         print("Heatmap samples returned")
         return heatmap
 
@@ -139,6 +143,9 @@ class HeatmapModel():
     # database: [traj0, traj1, ..., trajn]
 
     def get_risk_info(self, trajectory):
+        X_track = self.track2matrix(trajectory)
+        self.aggregator.get_infection_likelihood(X_track)
+
         # risk value come from the tracks the person took
         # most_risky_places is just the places with the highest risk values
         # maybe just the places in the trajectory and in the sick db
@@ -171,5 +178,8 @@ class HeatmapModel():
                 }
             ]
         }
-        self.update_database(trajectory)
+
+
+
+        # self.update_database(trajectory)
         return response

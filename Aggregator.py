@@ -116,7 +116,7 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
         X_track = self._unscale_input(X_track)
         # self.aggregator = KernelDensity()
         likelihoods = np.exp(self.aggregator.score(X_track))
-        return np.prod(likelihoods)
+        return np.sum(likelihoods)
 
     def sample_heatmap(self, num_samples):
         # self.aggregator = KernelDensity()

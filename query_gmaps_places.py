@@ -41,7 +41,7 @@ def latlong2meters_zurich(lat, long):
     xs = []
     ys = []
     for i in range(lat.size):
-        if i % 1000 == 0:
+        if i % 100 == 0:
             print("Converted %d/%d." % (i, lat.size))
         point = pyproj.transform(p_ll, p_mt, lat[i], long[i])
         xs += [point[0] - s[0]]

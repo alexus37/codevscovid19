@@ -1,0 +1,23 @@
+This is an idea of how our video might look like (text vise)
+
+# TODO maybe an example would be cool to demonstrate the relevance of this project. e.g. in berlin in one club night (I think in Kater Blau 10th of march or so) 50 people got infected.
+
+1. Intro of the problem
+- 5 seconds corona: "In recent months, the Covid19 pandemic has shown to lead to death rates of up to 5% in cases of health care overloads."
+- 5 seconds quarantine: "Switzerland is at the moment in a shutdown, trying to circumvent such a situation."
+2. The problem
+- "There is much uncertainty on how to proceed after the quarantine, we are facing at the moment, since opening of stores and workplaces would lead to another major outbreak."
+- "We need effective solutions to enable us to live our daily lives, while still being able to keep the infection curve flat."
+- Bridge: "And here is how we can do it:"
+3. Solution
+- "Many of you are Google users and store their location history."
+- "This data allows us to do two things:"
+- "1. All of us can identify and therefore avoid risk areas."  <- here we show a map of our risk heat map
+- "2. Also you can upload your location data of the last 2 weeks. By matching your locations with our time-sensitive risk maps, we compute a score that represents your risk of being infected. Like this, we can provide recommendations on who exactly should stay home or get tested." <- show track within risk map, along with risk places (with time) and and risk scores
+4. How it works
+- "Here is how it works:" <FROM NOW ON SCREENCAST>
+- "Google allows you to get your location data within a few clicks"
+- "We directly support their data format and use your data anonymously in two use cases:"
+- "If you're healthy, or not sure about it, we provide you with information on if and where you might have been affected in the last days"
+- "If you have been tested positively for the virus, you can contribute to our risk map and help others to be informed about their risk of being infected."
+- For now: stay home, for later: share and care

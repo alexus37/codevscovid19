@@ -1,32 +1,35 @@
-html, body {
-    width: 100%;
+html,
+body {
+  width: 100%;
 }
 
 #root {
-    display: flex;
-    width: 100%;
-    flex-direction: column; 
-    align-items: center;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
 }
 
 #content {
-    width: 80%;
+  width: 80%;
 }
 
 #map {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    align-items: center;
+  display: flex;
+  width: 100%;
+  height: 800px;
+  padding: 0;
+  margin: 0;
 }
 
 #submissions {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
 }
 
 .submission {
+<<<<<<< HEAD
     width: 400px;
     height: 200px;
 }
@@ -39,3 +42,7 @@ html, body {
     width: 100px;
     height: 100px;
   }
+=======
+  width: 400px;
+}
+>>>>>>> 3669fc431c50b5624f70fb788596b3a31a8ff8ed

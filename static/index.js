@@ -624,7 +624,8 @@ require([
       { ratio: 1, color: "rgba(14, 255, 255, 0.3)" }
     ],
     minPixelIntensity: 0,
-    maxPixelIntensity: 100
+    maxPixelIntensity: 100,
+    blurRadius: 15
   };
 
   const geojsonLayer = new GeoJSONLayer({

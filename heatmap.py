@@ -164,7 +164,8 @@ class HeatmapModel():
 
     def get_risk_info(self, trajectory):
         X_track = self.track2matrix(trajectory)
-        self.aggregator.get_infection_likelihood(X_track)
+        total_score, likelihoods, sorted_indices = self.aggregator.get_infection_likelihood(X_track)
+
 
         # risk value come from the tracks the person took
         # most_risky_places is just the places with the highest risk values

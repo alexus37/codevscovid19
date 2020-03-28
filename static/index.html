@@ -11,6 +11,7 @@
       rel="stylesheet"
       href="https://js.arcgis.com/4.14/esri/themes/dark/main.css"
     />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix.js"></script>
     <script src="https://js.arcgis.com/4.14/"></script>
     <script src="index.js"></script>
   </head>
@@ -29,7 +30,7 @@
                 </div>
                 <div id="infected-upload" class="submission">
                     <form id="infected-dropzone"
-                        class="dropzone"  
+                        class="dropzone"
                         action="/upload"
                         method="post">
                         <input type="file" name="filearg" hidden="true" />
@@ -47,7 +48,7 @@
 
                 In ut lacus faucibus felis mollis auctor. Fusce elementum quam erat, semper ultricies sem viverra ut. In commodo hendrerit nunc ut aliquet. Nunc bibendum aliquam ante, in volutpat sem pulvinar non. Aliquam lobortis sapien ut erat sodales ultrices. Maecenas in ullamcorper justo. Pellentesque quis libero sed eros fringilla pellentesque. Sed in sagittis tortor.
 
-                Curabitur eget venenatis nisl. Donec malesuada viverra nibh eu mollis. Integer ornare, magna vel condimentum vulputate, mauris elit porttitor quam, eu viverra diam ex in justo. Donec volutpat finibus posuere. Etiam placerat posuere dapibus. Nunc eget velit mi. Morbi blandit, ante luctus placerat elementum, metus augue sagittis massa, aliquam rhoncus felis elit et urna. Aliquam sed nisl lectus. Sed a tincidunt mauris. Aliquam erat volutpat. 
+                Curabitur eget venenatis nisl. Donec malesuada viverra nibh eu mollis. Integer ornare, magna vel condimentum vulputate, mauris elit porttitor quam, eu viverra diam ex in justo. Donec volutpat finibus posuere. Etiam placerat posuere dapibus. Nunc eget velit mi. Morbi blandit, ante luctus placerat elementum, metus augue sagittis massa, aliquam rhoncus felis elit et urna. Aliquam sed nisl lectus. Sed a tincidunt mauris. Aliquam erat volutpat.
             </div>
         </div>
         <div id="information">

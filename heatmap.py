@@ -120,10 +120,10 @@ class HeatmapModel():
         for i in range(sample_scores.shape[0]):
             feature_list += [{
                     "type": "Feature",
-                    "properties": {"mag": random.random(), "time": time[i]},
+                    "properties": {"mag": float("%.6f" % (sample_scores[i]*1000000)), "time": time[i]},
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [long[i], lat[i], 0]
+                        "coordinates": [float("%.6f" % long[i]), float("%.6f" % lat[i]), 0]
                     }
             }]
 

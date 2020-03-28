@@ -1,7 +1,8 @@
 import json
 
 #HEATMAP_FILE = 'template_heatmap.json'
-HEATMAP_FILE = 'simple_heatmap.json'
+#HEATMAP_FILE = 'simple_heatmap.json'
+HEATMAP_FILE = 'restaurant_heatmap.json'
 
 class HeatmapModel():
     def __init__(self, database):

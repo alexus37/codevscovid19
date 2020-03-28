@@ -118,7 +118,7 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
         likelihoods = np.exp(self.aggregator.score_samples(X_track))
 
         total_score = np.sum(likelihoods)
-        order = np.argsort(likelihoods)
+        order = np.argsort(likelihoods)[::-1]
         return total_score, likelihoods, order
 
     def sample_heatmap(self, num_samples):

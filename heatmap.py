@@ -141,9 +141,16 @@ class HeatmapModel():
 
     def get_risk_info(self, trajectory):
         X_track, X_Places, place_id = self.track2matrix(trajectory)
+        # disregard time for now
+        X_track[:,2] = 0
+        X_Places[:,2] = 0
         print(X_track.shape)
         total_score, _, _ = self.aggregator.get_infection_likelihood(X_track)
         _, likelihoods, sorted_indices = self.aggregator.get_infection_likelihood(X_Places)
+
+        total_score *= 1000000
+        likelihoods *= 1000000
+
         most_risky_places = []
 
         i = 0

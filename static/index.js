@@ -639,6 +639,33 @@ require([
     zoom: 14,
     map: map
   });
+
+  const addLegend = () => {
+    // get the first layer in the collection of operational layers in the WebMap
+    // when the resources in the MapView have loaded.
+
+    var legend = new Legend({
+      view: view,
+      layerInfos: [
+        {
+          layer: geojsonLayer,
+          title: "Risk"
+        },
+        {
+          layer: activitySegmentsLayerPath,
+          title: "Trajectories"
+        },
+        {
+          layer: placeVisitsLayer,
+          title: "Visited places"
+        }
+      ]
+    });
+
+    // Add widget to the bottom right corner of the view
+    view.ui.add(legend, "bottom-right");
+  };
+
   const uiHandler = response => {
     document.getElementById("join").style.display = "None";
     document.getElementById("submissions").style.display = "None";
@@ -673,6 +700,7 @@ require([
         tbody.appendChild(tr);
       });
     }
+    addLegend();
   };
 
   var healthyDropzone = new Dropzone("#healthy-dropzone", {

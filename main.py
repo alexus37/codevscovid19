@@ -31,7 +31,11 @@ class UploadHandler(tornado.web.RequestHandler):
         with open(f'{DATA_DIR}/{uuid.uuid4()}.json', 'w') as fp:
                 json.dump(trajectory_json, fp)
 
-        self.write(json.dumps(response))
+        res = {
+            "response": response,
+            "trajectory": trajectory_json,
+        }
+        self.write(json.dumps(res))
         self.finish()  # Without this the client's request will hang
 
 class HeatmapHandler(tornado.web.RequestHandler):

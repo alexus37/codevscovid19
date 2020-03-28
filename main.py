@@ -31,7 +31,11 @@ class UploadHandler(tornado.web.RequestHandler):
         with open(f'{DATA_DIR}/{uuid.uuid4()}.json', 'w') as fp:
                 json.dump(trajectory_json, fp)
 
-        self.write(json.dumps(response))
+        res = {
+            "response": response,
+            "trajectory": trajectory_json,
+        }
+        self.write(json.dumps(res))
         self.finish()  # Without this the client's request will hang
 
 class HeatmapHandler(tornado.web.RequestHandler):
@@ -42,6 +46,10 @@ class HeatmapHandler(tornado.web.RequestHandler):
         response = self.heatmapModel.get_heatmap()
         self.write(json.dumps(response))
         self.finish()  # Without this the client's request will hang
+
+class NoCacheStaticHandler(tornado.web.StaticFileHandler):
+    def set_extra_headers(self, path):
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 
 def make_app():
     database = []
@@ -56,7 +64,7 @@ def make_app():
     return tornado.web.Application([
         (r"/heatmap", HeatmapHandler, {'heatmapModel': heatmapModel}),
         (r"/upload", UploadHandler, {'heatmapModel': heatmapModel}),
-        (r"/(.*)", tornado.web.StaticFileHandler, {"path": ROOT, "default_filename": "index.html"})
+        (r"/(.*)", NoCacheStaticHandler, {"path": ROOT, "default_filename": "index.html"})
     ])  # URL Mapping
 
 if __name__ == "__main__":

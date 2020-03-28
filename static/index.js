@@ -1,3 +1,4 @@
+Dropzone.autoDiscover = false;
 require([
   "esri/Map",
   "esri/layers/GeoJSONLayer",
@@ -638,20 +639,22 @@ require([
     zoom: 14,
     map: map
   });
-  const get_sample_track = async () => {
-    const response = await fetch("2020_MARCH.json");
-    const responseJson = await response.json();
-    updateTrajectory(responseJson);
-  };
-  get_sample_track();
-  Dropzone.options.healthyDropzone = {
-    init: function() {
-      this.on("addedFile", function(file) {
-        console.log("added file");
-      });
-      this.on("success", function(file) {
-        console.log("success");
-      });
-    }
-  };
+
+  var healthyDropzone = new Dropzone("#healthy-dropzone", {
+    url: "/upload"
+  });
+  var infectedDropzone = new Dropzone("#infected-dropzone", {
+    url: "/upload"
+  });
+
+  healthyDropzone.on("success", function(file, res) {
+    console.log("Great success.");
+    var resObject = JSON.parse(res);
+    updateTrajectory(resObject.trajectory);
+  });
+
+  infectedDropzone.on("succes", function(file, res) {
+    var resObject = JSON.parse(res);
+    updateTrajectory(resObject.trajectory);
+  });
 });

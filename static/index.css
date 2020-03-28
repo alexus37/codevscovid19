@@ -11,13 +11,15 @@ body {
 }
 
 #content {
-  width: 80%;
+  width: 100%;
 }
 
 #map {
   display: flex;
   width: 100%;
-  height: 800px;
+  height: calc(100vh - 150px);
+  height: -webkit-calc(100vh - 150px);
+  /* height: 400px; */
   padding: 0;
   margin: 0;
 }
@@ -26,6 +28,46 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+}
+
+.submission {
+  height: 100%;
+  width: 50%;
+}
+
+.dropzone {
+  width: 100%;
+}
+
+.dz-details,
+.dz-success-mark,
+.dz-error-mark,
+.dz-image {
+  display: none !important;
+}
+
+.dz-preview {
+  display: flex !important;
+  width: 100%;
+  min-height: calc(100px - 32px) !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.dz-progress {
+  position: relative !important;
+  width: 80% !important;
+  left: 0 !important;
+  top: 0 !important;
+}
+
+#healthy-dropzone {
+  background-color: darkseagreen;
+}
+
+#infected-dropzone {
+  background-color: indianred;
 }
 
 #riskContainer {
@@ -39,24 +81,6 @@ body {
 
 .tableFullWidth {
   width: 100%;
-}
-
-.submission {
-  width: 400px;
-  height: 200px;
-}
-
-.dropzone {
-  width: 400px;
-}
-
-.dz-image {
-  width: 50px;
-  height: 50px;
-}
-
-.dz-image {
-  display: none !important;
 }
 
 #risk {

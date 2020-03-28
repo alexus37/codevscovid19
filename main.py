@@ -11,9 +11,11 @@ ROOT = os.path.join(os.path.dirname(__file__), "static")
 PORT = 8000
 DATA_DIR = f"./data"
 
+
 class UploadHandler(tornado.web.RequestHandler):
     def initialize(self, heatmapModel):
         self.heatmapModel = heatmapModel
+
     def post(self):
         trajectory = self.request.files['file'][0]['body']
         trajectory_json = trajectory.decode('utf8').replace("'", '"')
@@ -26,10 +28,10 @@ class UploadHandler(tornado.web.RequestHandler):
             #  save to file
             self.heatmapModel.update_database(trajectory_json)
             response = {
-                'message' : 'Thanks for helping out!!'
+                'message': 'Thanks for helping out!!'
             }
         with open(f'{DATA_DIR}/{uuid.uuid4()}.json', 'w') as fp:
-                json.dump(trajectory_json, fp)
+            json.dump(trajectory_json, fp)
 
         res = {
             "response": response,
@@ -38,18 +40,23 @@ class UploadHandler(tornado.web.RequestHandler):
         self.write(json.dumps(res))
         self.finish()  # Without this the client's request will hang
 
+
 class HeatmapHandler(tornado.web.RequestHandler):
     def initialize(self, heatmapModel):
         self.heatmapModel = heatmapModel
     # returns the heatmap
+
     def get(self):
         response = self.heatmapModel.get_heatmap()
         self.write(json.dumps(response))
         self.finish()  # Without this the client's request will hang
 
+
 class NoCacheStaticHandler(tornado.web.StaticFileHandler):
     def set_extra_headers(self, path):
-        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        self.set_header('Cache-Control',
+                        'no-store, no-cache, must-revalidate, max-age=0')
+
 
 def make_app():
     database = []
@@ -64,8 +71,10 @@ def make_app():
     return tornado.web.Application([
         (r"/heatmap", HeatmapHandler, {'heatmapModel': heatmapModel}),
         (r"/upload", UploadHandler, {'heatmapModel': heatmapModel}),
-        (r"/(.*)", NoCacheStaticHandler, {"path": ROOT, "default_filename": "index.html"})
+        (r"/(.*)", NoCacheStaticHandler,
+         {"path": ROOT, "default_filename": "index.html"})
     ])  # URL Mapping
+
 
 if __name__ == "__main__":
     app = make_app()

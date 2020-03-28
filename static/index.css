@@ -28,16 +28,29 @@ body {
   justify-content: space-around;
 }
 
+#riskContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+#riskContainer > h1 {
+  font-size: 80px;
+}
+
+.tableFullWidth {
+  width: 100%;
+}
+
 .submission {
-    width: 400px;
-    height: 200px;
+  width: 400px;
+  height: 200px;
 }
 
 .dropzone {
-    width: 400px;
+  width: 400px;
 }
 
 .dropzone .dz-preview {
-    width: 100px;
-    height: 100px;
-  }
+  width: 100px;
+  height: 100px;
+}

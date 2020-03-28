@@ -551,7 +551,7 @@ require([
         symbol: {
           type: "simple-line", // autocasts as new SimpleLineSymbol()
           width: 2,
-          color: [255, 255, 255, 0.2]
+          color: [255, 255, 255, 0.4]
         }
       }
     });
@@ -611,13 +611,13 @@ require([
     field: "mag",
     colorStops: [
       { ratio: 0, color: "rgba(58, 217, 133, 0)" },
-      { ratio: 0.2, color: "rgba(58, 217, 133, 0.3)" },
-      { ratio: 0.5, color: "rgba(46, 205, 141, 0.5)" },
-      { ratio: 0.8, color: "rgba(42, 185, 157, 0.5)" },
-      { ratio: 1, color: "rgba(14, 255, 255, 0.5)" }
+      { ratio: 0.2, color: "rgba(58, 217, 133, 0.1)" },
+      { ratio: 0.5, color: "rgba(46, 205, 141, 0.3)" },
+      { ratio: 0.8, color: "rgba(42, 185, 157, 0.3)" },
+      { ratio: 1, color: "rgba(14, 255, 255, 0.3)" }
     ],
     minPixelIntensity: 0,
-    maxPixelIntensity: 10
+    maxPixelIntensity: 100
   };
 
   const geojsonLayer = new GeoJSONLayer({

@@ -502,6 +502,10 @@ require([
     if (placeVisitsLayer) {
       map.remove(placeVisitsLayer);
     }
+    const template = {
+      // autocasts as new PopupTemplate()
+      title: "Place: {NAME}"
+    };
     placeVisitsLayer = new FeatureLayer({
       // URL to the service
       source: places,
@@ -512,7 +516,7 @@ require([
           type: "oid"
         },
         {
-          name: "url",
+          name: "NAME",
           type: "string"
         }
       ],
@@ -524,9 +528,11 @@ require([
           color: [0, 255, 255],
           outline: null
         }
-      }
+      },
+      outFields: ["*"],
+      popupTemplate: template
     });
-    map.layers.add(placeVisitsLayer);
+    map.add(placeVisitsLayer);
   };
 
   const addActivitySegment = graphics => {

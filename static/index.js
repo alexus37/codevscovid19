@@ -676,6 +676,8 @@ require([
   const uiHandler = response => {
     document.getElementById("join").style.display = "None";
     document.getElementById("submissions").style.display = "None";
+    document.getElementById("map").classList.add("map-post");
+    document.getElementById("map").classList.remove("map-pre");
     if (response.message) {
       document.getElementById("thanksMessage").style.display = "block";
     }

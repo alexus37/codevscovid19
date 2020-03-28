@@ -7,6 +7,8 @@ import numpy as np
 from query_gmaps_places import latlong2meters_zurich, meters2latlong_zurich
 from tqdm import tqdm
 import random
+import os
+import pickle as pkl
 
 #HEATMAP_FILE = 'template_heatmap.json'
 HEATMAP_FILE = 'simple_heatmap.json'
@@ -18,6 +20,7 @@ def open_sample_heatmap():
     with open(HEATMAP_FILE, 'r') as f:
         heatmap = json.load(f)
     return heatmap
+
 
 def open_sample_dataset():
     import pandas
@@ -35,47 +38,23 @@ def open_sample_dataset():
     dataframe['time'] = pandas.to_datetime(dataframe['time'], format="%Y%m%d%H%M%S")
     time = dataframe['time'].values.astype(float)
     return [lat, long, time]
-    # with open('zurich_dataset.csv' ,'r') as f:
-    #     csv_reader = csv.reader(f, delimiter=',')
 
 
 class HeatmapModel():
-    def __init__(self, database):
+    def __init__(self, database=None):
         super().__init__()
-        if len(database) == 0:
-            lat, long, time = open_sample_dataset()
-            lat = lat[:10000]
-            long = long[:10000]
-            time = time[:10000]
-            self.database = [[lat, long, time], ]
-            import os
-            import pickle as pkl
-            dataset_file = "zurich_dataset.pkl"
-            if not os.path.isfile(dataset_file):
-                x, y = latlong2meters_zurich(lat, long)
-                with open(dataset_file, "wb") as f:
-                    pkl.dump(x, f)
-                    pkl.dump(y, f)
-                    pkl.dump(time, f)
-                return
-            else:
-                with open(dataset_file, "rb") as f:
-                    x = pkl.load(f)
-                    y = pkl.load(f)
-                    time = pkl.load(f)
-            self.X = np.array([x, y, time]).T
-        else:
-            self.database = database
-            self.X = self.database2matrix(self.database)
+        self.database = database or []
+        dataset_file = "zurich_dataset.pkl"
+        if not os.path.isfile(dataset_file):
+            raise FileNotFoundError("Database does not exist")
+        with open(dataset_file, "rb") as f:
+            x = pkl.load(f)
+            y = pkl.load(f)
+            time = pkl.load(f)
+        self.X = np.array([x, y, time]).T
         self.aggregator = TimeSmoothAggregatorKernelDensity()
-
-        if len(self.database) > 0:
-            self.X[:, 2] = 0 # discard time
-            self.aggregator.update(self.X)
-
-    def database2matrix(self, database):
-        x, y = latlong2meters_zurich(database[0][0][:2000], database[0][1][:2000])
-        return np.array([x, y, database[0][2][:2000]]).T
+        self.X[:, 2] = 0  # discard time
+        self.aggregator.update(self.X)
 
     def track2matrix(self, track):
         point_list = []
@@ -126,13 +105,12 @@ class HeatmapModel():
     def update_database(self, trajectory):
         self.database.append(trajectory)
         if len(self.database) > 0:
-            X = self.track2matrix(trajectory)
-            X[:, 2] = 0 # discard time
-            self.aggregator.update(X)
+            self.X = np.concatenate((self.X, self.track2matrix(trajectory)[0]),axis=0)
+            self.X[:, 2] = 0 # discard time
+            self.aggregator.update(self.X)
 
     def get_heatmap(self):
         print("Retrieving heatmap samples")
-        sample_heatmap = open_sample_heatmap()
         samples_locations, sample_scores = self.aggregator.sample_heatmap(1000)
         feature_list = []
         lat, long = meters2latlong_zurich(samples_locations[:, 0], samples_locations[:, 1])
@@ -152,9 +130,6 @@ class HeatmapModel():
             "type": "FeatureCollection",
             "features": feature_list
         }
-        # from json import encoder
-        json.encoder.FLOAT_REPR = lambda o: format(o, '.2f')
-        print(json.dumps(heatmap))
         print("Heatmap samples returned")
         return heatmap
 
@@ -163,15 +138,14 @@ class HeatmapModel():
     # database: [traj0, traj1, ..., trajn]
 
     def get_risk_info(self, trajectory):
-        X_track = self.track2matrix(trajectory)
+        X_track = self.track2matrix(trajectory)[0]
         total_score, likelihoods, sorted_indices = self.aggregator.get_infection_likelihood(X_track)
-
 
         # risk value come from the tracks the person took
         # most_risky_places is just the places with the highest risk values
         # maybe just the places in the trajectory and in the sick db
         response = {
-            'risk_value': 0.75,
+            'risk_value': total_score,
             'most_risky_places': [
                 {
                     "latitudeE7": 473743221,
@@ -199,8 +173,5 @@ class HeatmapModel():
                 }
             ]
         }
-
-
-
         # self.update_database(trajectory)
         return response

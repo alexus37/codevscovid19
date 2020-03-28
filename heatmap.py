@@ -39,7 +39,7 @@ def open_sample_dataset():
     return [lat, long, time]
 
 def find_place_by_id(id, track):
-    for traj_entery in tqdm(track):
+    for traj_entery in tqdm(track["timelineObjects"]):
         if "placeVisit" in traj_entery and "location" in traj_entery["placeVisit"]:
             place = traj_entery["placeVisit"]["location"]
             if place["placeId"] == id:
@@ -77,30 +77,24 @@ class HeatmapModel():
             # only use lines so far
             if "activitySegment" in traj_entery and "simplifiedRawPath" in traj_entery["activitySegment"]:
                 for point in traj_entery["activitySegment"]["simplifiedRawPath"]["points"]:
-                    s_point = shapely.geometry.Point((
-                        point["latE7"] / 10000000,
-                        point["lngE7"] / 10000000
-                    ))
-
-                    # Project corners to target projection
-                    s_point = pyproj.transform(p_ll, p_mt, s_point.x, s_point.y) # Transform NW point to 3857
+                    x, y = latlong2meters_zurich(
+                        np.array([point["latE7"] / 10000000]),
+                        np.array([point["lngE7"] / 10000000])
+                    )
                     point_list.append([
-                        float(s_point[0]),
-                        float(s_point[1]),
+                        float(x[0]),
+                        float(y[0]),
                         float(point["timestampMs"])
                     ])
             if "placeVisit" in traj_entery and "location" in traj_entery["placeVisit"]:
                 point = traj_entery["placeVisit"]["location"]
-                s_point = shapely.geometry.Point((
-                    point["latitudeE7"] / 10000000,
-                    point["longitudeE7"] / 10000000
-                ))
-
-                # Project corners to target projection
-                s_point = pyproj.transform(p_ll, p_mt, s_point.x, s_point.y) # Transform NW point to 3857
+                x, y = latlong2meters_zurich(
+                    np.array([point["latitudeE7"] / 10000000]),
+                    np.array([point["longitudeE7"] / 10000000])
+                )
                 place_location_list.append([
-                    float(s_point[0]),
-                    float(s_point[1]),
+                    np.array(float(x[0])),
+                    np.array(float(y[0])),
                     0.0
                 ])
                 place_id_list.append(point["placeId"])
@@ -170,4 +164,5 @@ class HeatmapModel():
             'most_risky_places': most_risky_places
         }
         # self.update_database(trajectory)
+        print(response)
         return response

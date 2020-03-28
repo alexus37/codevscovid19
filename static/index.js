@@ -713,10 +713,12 @@ require([
   };
 
   var healthyDropzone = new Dropzone("#healthy-dropzone", {
-    url: "/upload"
+    url: "/upload",
+    timeout: 120000
   });
   var infectedDropzone = new Dropzone("#infected-dropzone", {
-    url: "/upload"
+    url: "/upload",
+    timeout: 120000
   });
 
   healthyDropzone.on("success", function(file, res) {

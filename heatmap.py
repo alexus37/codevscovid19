@@ -73,7 +73,7 @@ class HeatmapModel():
         # self.X[:, 2] = 0  # discard time
 
         self.aggregator.update(self.X)
-        self.heatmap_sample_count = 10000
+        self.heatmap_sample_count = 1000
 
     def track2matrix(self, track):
         point_list = []

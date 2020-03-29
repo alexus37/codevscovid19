@@ -1,17 +1,15 @@
 from heatmap import open_sample_dataset
-from query_gmaps_places import meters2latlong_zurich, latlong2meters_zurich
+from latlng_to_meters import translate
 
-lat, long, time = open_sample_dataset()
-lat = lat
-long = long
-time = time
+lat, lng, time = open_sample_dataset()
 
 import os
 import pickle as pkl
 
-dataset_file = "zurich_dataset_all.pkl"
+
+dataset_file = "zurich_dataset_all2.pkl"
 if not os.path.isfile(dataset_file):
-    x, y = latlong2meters_zurich(lat, long)
+    x, y = translate(lng, lat)
     with open(dataset_file, "wb") as f:
         pkl.dump(x, f)
         pkl.dump(y, f)

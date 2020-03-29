@@ -4,7 +4,7 @@ import pyproj
 import numpy as np
 from Aggregator import TimeSmoothAggregatorKernelDensity
 import numpy as np
-from query_gmaps_places import latlong2meters_zurich, meters2latlong_zurich
+from latlng_to_meters import translate_reverse, translate
 from tqdm import tqdm
 import random
 import os
@@ -53,7 +53,7 @@ class HeatmapModel():
         super().__init__()
         self.database = database or []
         # dataset_file = "zurich_dataset.pkl"
-        dataset_file = "zurich_dataset_all.pkl"
+        dataset_file = "zurich_dataset_all2.pkl"
         if not os.path.isfile(dataset_file):
             raise FileNotFoundError("Database does not exist")
         with open(dataset_file, "rb") as f:
@@ -82,9 +82,9 @@ class HeatmapModel():
             # only use lines so far
             if "activitySegment" in traj_entery and "simplifiedRawPath" in traj_entery["activitySegment"]:
                 for point in traj_entery["activitySegment"]["simplifiedRawPath"]["points"]:
-                    x, y = latlong2meters_zurich(
-                        np.array([point["latE7"] / 10000000]),
-                        np.array([point["lngE7"] / 10000000])
+                    x, y = translate(
+                        np.array([point["lngE7"] / 10000000]),
+                        np.array([point["latE7"] / 10000000])
                     )
                     point_list.append([
                         float(x[0]),
@@ -93,9 +93,9 @@ class HeatmapModel():
                     ])
             if "placeVisit" in traj_entery and "location" in traj_entery["placeVisit"]:
                 point = traj_entery["placeVisit"]["location"]
-                x, y = latlong2meters_zurich(
-                    np.array([point["latitudeE7"] / 10000000]),
-                    np.array([point["longitudeE7"] / 10000000])
+                x, y = translate(
+                    np.array([point["longitudeE7"] / 10000000]),
+                    np.array([point["latitudeE7"] / 10000000])
                 )
                 place_location_list.append([
                     np.array(float(x[0])),
@@ -123,7 +123,7 @@ class HeatmapModel():
         print("Retrieving heatmap samples")
         samples_locations, sample_scores = self.aggregator.sample_heatmap(self.heatmap_sample_count)
         feature_list = []
-        lat, long = meters2latlong_zurich(samples_locations[:, 0], samples_locations[:, 1])
+        lng, lat = translate_reverse(samples_locations[:, 0], samples_locations[:, 1])
         time =  samples_locations[:, 2]
 
         for i in range(sample_scores.shape[0]):
@@ -132,7 +132,7 @@ class HeatmapModel():
                     "properties": {"mag": float("%.6f" % (sample_scores[i]*1000000)), "time": time[i]},
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [float("%.6f" % long[i]), float("%.6f" % lat[i]), 0]
+                        "coordinates": [float("%.6f" % lat[i]), float("%.6f" % lng[i]), 0]  # TODO lat, lng is flipped
                     }
             }]
             # print("Sample %d score %f" % (i, sample_scores[i]*1000000))

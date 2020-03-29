@@ -17,7 +17,7 @@ top_right_m = pyproj.transform(p_ll, p_mt, top_right[1], top_right[0])
 bottom_left_m = pyproj.transform(p_ll, p_mt, bottom_left[1], bottom_left[0])
 
 
-def translate(latitude, longitude):
+def translate(longitude, latitude):
     x = top_left_m[0] + ((longitude - top_left[1]) * 7406.86 / (top_right[1] - top_left[1]))
     y = top_left_m[1] + ((latitude - top_left[0]) * -7454.7 / (bottom_left[0] - top_left[0]))
 

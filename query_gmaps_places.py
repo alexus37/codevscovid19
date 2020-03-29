@@ -27,56 +27,6 @@ def get_zurich_points():
     return se, nw
 
 
-def latlong2meters_zurich(lat, long):
-    # Set up projections
-    p_ll = pyproj.Proj(init='epsg:4326')
-    p_mt = pyproj.Proj(init='epsg:3857') # metric; same as EPSG:900913
-
-    # Create corners of rectangle to be transformed to a grid
-    se, nw = get_zurich_points()
-
-    # Project corners to target projection
-    s = pyproj.transform(p_ll, p_mt, nw.x, nw.y) # Transform NW point to 3857
-    e = pyproj.transform(p_ll, p_mt, se.x, se.y) # .. same for SE
-
-    xs = []
-    ys = []
-    points = translate(lat, long)  # vectorized
-    return points[0] - s[0], points[1] - s[1]
-    # for i in range(lat.size):
-    #     if i % 100 == 0:
-    #         print("Converted %d/%d." % (i, lat.size))
-    #     point = translate(lat[i], long[i])  # I previously forgot the indices. Now the loop version is also fast..
-    #     xs += [point[0] - s[0]]
-    #    ys += [point[1] - s[1]]
-    # return np.array(xs), np.array(ys)
-
-
-
-def meters2latlong_zurich(x, y):
-    # Set up projections
-    p_ll = pyproj.Proj(init='epsg:4326')
-    p_mt = pyproj.Proj(init='epsg:3857') # metric; same as EPSG:900913
-
-    # Create corners of rectangle to be transformed to a grid
-    se, nw = get_zurich_points()
-
-    # Project corners to target projection
-    s = pyproj.transform(p_ll, p_mt, nw.x, nw.y) # Transform NW point to 3857
-    e = pyproj.transform(p_ll, p_mt, se.x, se.y) # .. same for SE
-
-    lat = []
-    long = []
-    for i in range(x.size):
-        if i % 100 == 0:
-            print("Converted %d/%d." % (i, x.size))
-        point = translate_reverse(x[i] + s[0], y[i] + s[1])
-        lat += [point[0]]
-        long += [point[1]]
-
-    return np.array(lat), np.array(long)
-
-
 def main(key):
     # Set up projections
     p_ll = pyproj.Proj(init='epsg:4326')

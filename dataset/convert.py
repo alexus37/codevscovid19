@@ -7,11 +7,12 @@ import glob
 from tqdm import tqdm
 import multiprocessing
 from geopy.distance import great_circle
+from math import radians, cos, sin, asin, sqrt
 
 PROXIMITY_THRESHOLD = 750  # TODO tweak to get the right amounts of visits
 RESTAURANTS_FOLDER = 'google_places_restaurants/'
 
-from math import radians, cos, sin, asin, sqrt
+
 def haversine(point1, point2):
     """
     Calculate the great circle distance between two points 
@@ -28,9 +29,11 @@ def haversine(point1, point2):
     m = 6371* c * 1000
     return m
 
+
 def distance(point1, point2):
     return haversine(point1, point2)
     return great_circle(point1, point2).km *1000
+
 
 def _parse_restaurant(data):
     return {

@@ -688,6 +688,19 @@ require([
     view.ui.add(legend, "bottom-right");
   };
 
+  const openPopup = place => {
+    const location = {
+      type: "point",
+      latitude: place["latitudeE7"] / 10000000,
+      longitude: place["longitudeE7"] / 10000000
+    };
+    view.popup.open({
+      location, // location of the click on the view
+      title: `Place: ${place.name}`
+    });
+    view.goTo([location.longitude, location.latitude]);
+  };
+
   const uiHandler = response => {
     document.getElementById("join").style.display = "None";
     document.getElementById("submissions").style.display = "None";
@@ -705,6 +718,7 @@ require([
       tbody.innerHTML = ""; // clear
       response.most_risky_places.forEach((element, index) => {
         const tr = document.createElement("tr");
+        tr.addEventListener("click", () => openPopup(element));
         const th = document.createElement("th", { scope: "row" });
         th.innerHTML = index;
         tr.appendChild(th);

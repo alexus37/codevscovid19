@@ -103,3 +103,7 @@ body {
 #thanksMessage {
   display: none;
 }
+
+#riskPlacesTable {
+  cursor: pointer;
+}

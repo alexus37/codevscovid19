@@ -136,7 +136,7 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
         heatmap_samples = self._scale_input(heatmap_samples)
         return heatmap_samples, sample_scores
 
-    def plot(self):
+    def plot(self, grid_resolution=1000):
         from matplotlib import pyplot as plt
         x_min = self.X[:, 0].min()
         x_max = self.X[:, 0].max()
@@ -148,7 +148,7 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
             z_min = 0
             z_max = 1
 
-        grid_size = (x_max - x_min)/100
+        grid_size = (x_max - x_min)/grid_resolution
 
         x_grid = np.arange(x_min, x_max, grid_size)
         y_grid = np.arange(y_min, y_max, grid_size)

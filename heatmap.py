@@ -64,8 +64,8 @@ class HeatmapModel():
         self.X = np.array([x, y, time]).T
         # bandwidht controls the smoothness of the distribution
         # bandwidth = 1.
-        bandwidth = 10.
-        # bandwidth = 50.
+        # bandwidth = 10.
+        bandwidth = 50.
         self.aggregator = TimeSmoothAggregatorKernelDensity(bandwidth=bandwidth, disregard_time=True)
         # self.X[:, 2] = 0  # discard time
 
@@ -118,7 +118,7 @@ class HeatmapModel():
 
     def get_heatmap(self):
         ## debug plot of the distribution
-        # self.aggregator.plot()
+        self.aggregator.plot()
 
         print("Retrieving heatmap samples")
         samples_locations, sample_scores = self.aggregator.sample_heatmap(self.heatmap_sample_count)

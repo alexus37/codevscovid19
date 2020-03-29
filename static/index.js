@@ -497,6 +497,7 @@ require([
   let placeVisitsLayer = null;
   let activitySegmentsLayer = null;
   let activitySegmentsLayerPath = null;
+  let legend = null;
 
   const addPlaceVisits = places => {
     if (placeVisitsLayer) {
@@ -532,6 +533,7 @@ require([
       outFields: ["*"],
       popupTemplate: template
     });
+
     map.add(placeVisitsLayer);
   };
 
@@ -647,11 +649,25 @@ require([
     map: map
   });
 
+  legend = new Legend({
+    view: view,
+    layerInfos: [
+      {
+        layer: geojsonLayer,
+        title: "Risk"
+      }
+    ]
+  });
+
+  // Add widget to the bottom right corner of the view
+  view.ui.add(legend, "bottom-right");
+
   const addLegend = () => {
     // get the first layer in the collection of operational layers in the WebMap
     // when the resources in the MapView have loaded.
+    view.ui.remove(legend);
 
-    var legend = new Legend({
+    legend = new Legend({
       view: view,
       layerInfos: [
         {

@@ -617,7 +617,6 @@ require([
 
   const renderer = {
     type: "heatmap",
-    field: "mag",
     colorStops: [
       { ratio: 0, color: "rgba(58, 217, 133, 0)" },
       { ratio: 0.2, color: "rgba(58, 217, 133, 0.1)" },

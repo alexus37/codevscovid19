@@ -60,11 +60,17 @@ class HeatmapModel():
             x = pkl.load(f)
             y = pkl.load(f)
             time = pkl.load(f)
+        print("The loaded database contains %d samples" % x.shape[0])
         self.X = np.array([x, y, time]).T
-        self.aggregator = TimeSmoothAggregatorKernelDensity()
-        self.X[:, 2] = 0  # discard time
+        # bandwidht controls the smoothness of the distribution
+        # bandwidth = 1.
+        bandwidth = 10.
+        # bandwidth = 50.
+        self.aggregator = TimeSmoothAggregatorKernelDensity(bandwidth=bandwidth, disregard_time=True)
+        # self.X[:, 2] = 0  # discard time
+
         self.aggregator.update(self.X)
-        self.heatmap_sample_cnt = 10
+        self.heatmap_sample_count = 100
 
     def track2matrix(self, track):
         point_list = []
@@ -107,12 +113,15 @@ class HeatmapModel():
         self.database.append(trajectory)
         if len(self.database) > 0:
             self.X = np.concatenate((self.X, self.track2matrix(trajectory)[0]),axis=0)
-            self.X[:, 2] = 0 # discard time
+            # self.X[:, 2] = 0 # discard time
             self.aggregator.update(self.X)
 
     def get_heatmap(self):
+        ## debug plot of the distribution
+        # self.aggregator.plot()
+
         print("Retrieving heatmap samples")
-        samples_locations, sample_scores = self.aggregator.sample_heatmap(self.heatmap_sample_cnt)
+        samples_locations, sample_scores = self.aggregator.sample_heatmap(self.heatmap_sample_count)
         feature_list = []
         lat, long = meters2latlong_zurich(samples_locations[:, 0], samples_locations[:, 1])
         time =  samples_locations[:, 2]
@@ -126,6 +135,8 @@ class HeatmapModel():
                         "coordinates": [float("%.6f" % long[i]), float("%.6f" % lat[i]), 0]
                     }
             }]
+            # print("Sample %d score %f" % (i, sample_scores[i]*1000000))
+            # print("Sample %d location (%f, %f)" % (i, long[i], lat[i]))
 
         heatmap = {
             "type": "FeatureCollection",
@@ -140,9 +151,9 @@ class HeatmapModel():
 
     def get_risk_info(self, trajectory):
         X_track, X_Places, place_id = self.track2matrix(trajectory)
-        # disregard time for now
-        X_track[:,2] = 0
-        X_Places[:,2] = 0
+        # # disregard time for now
+        # X_track[:,2] = 0
+        # X_Places[:,2] = 0
         print(X_track.shape)
         total_score, _, _ = self.aggregator.get_infection_likelihood(X_track)
         _, likelihoods, sorted_indices = self.aggregator.get_infection_likelihood(X_Places)

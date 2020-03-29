@@ -56,8 +56,9 @@ class TimeDiscretizedAggregator(Aggregator):
 
 class TimeSmoothAggregatorBase(Aggregator):
 
-    def __init__(self, dimension_scales = None):
+    def __init__(self, dimension_scales = None, disregard_time=False):
         super().__init__()
+        self.disregard_time = disregard_time
         self.X = None # time : nsamples x 3 array
         self.aggregator = None
         self.dimension_scales = dimension_scales or np.ones(3)
@@ -70,6 +71,8 @@ class TimeSmoothAggregatorBase(Aggregator):
 
     def update(self, X_new):
         X_new = self._unscale_input(X_new)
+        if self.disregard_time:
+            X_new = X_new[:,:2]
         if self.X is None:
             self.X = X_new
         else:
@@ -103,8 +106,8 @@ class TimeSmoothAggregatorKDTree(TimeSmoothAggregatorBase):
 
 class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
 
-    def __init__(self, bandwidth = None, kernel = None):
-        super().__init__()
+    def __init__(self, bandwidth = None, kernel = None, disregard_time=False):
+        super().__init__(disregard_time=disregard_time)
         self.bandwidth = bandwidth or 1.0
         self.kernel = kernel or 'gaussian'
 
@@ -114,6 +117,8 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
 
     def get_infection_likelihood(self, X_track):
         X_track = self._unscale_input(X_track)
+        if self.disregard_time:
+            X_track = X_track[:, :2]
         # self.aggregator = KernelDensity()
         likelihoods = np.exp(self.aggregator.score_samples(X_track))
 
@@ -126,6 +131,8 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
         rand_state = np.random.RandomState(0)
         heatmap_samples = self.aggregator.sample(num_samples, rand_state)
         sample_scores = np.exp(self.aggregator.score_samples(heatmap_samples))
+        if self.disregard_time:
+            heatmap_samples = np.concatenate([heatmap_samples, np.ones(shape=(heatmap_samples.shape[0],1 ), dtype=heatmap_samples.dtype)], axis=1)
         heatmap_samples = self._scale_input(heatmap_samples)
         return heatmap_samples, sample_scores
 
@@ -137,27 +144,43 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
         y_max = self.X[:, 1].max()
         # z_min = self.X[2].min()
         # z_max = self.X[2].max()
-        z_min = 0
-        z_max = 1
+        if not self.disregard_time:
+            z_min = 0
+            z_max = 1
 
-        grid_size = 10
+        grid_size = (x_max - x_min)/100
+
         x_grid = np.arange(x_min, x_max, grid_size)
         y_grid = np.arange(y_min, y_max, grid_size)
-        z_grid = np.arange(z_min, z_max, grid_size)
 
-        X, Y, Z = np.meshgrid(x_grid, y_grid, z_grid)
+        print("Resolution of the plot grid is: ")
+        print(x_grid.size)
+        print(y_grid.size)
 
-        xyz = np.vstack([Y.ravel(), X.ravel(), Z.ravel()]).T
+        if not self.disregard_time:
+            z_grid = np.arange(z_min, z_max, grid_size)
+            X, Y, Z = np.meshgrid(x_grid, y_grid, z_grid)
+            xyz = np.vstack([Y.ravel(), X.ravel(), Z.ravel()]).T
+        else:
+            X, Y = np.meshgrid(x_grid, y_grid)
+            xyz = np.vstack([Y.ravel(), X.ravel()]).T
 
+        print("Computing the heatmap values for the grid")
         heat_values = np.exp(self.aggregator.score_samples(xyz))
+
+        print("Values computed")
 
         # plot contours of the density
         # levels = np.linspace(0, Z.max(), 25)
         # plt.contourf(X, Y, Z, levels=levels, cmap=plt.cm.Reds)
-        heatmap = heat_values.reshape(Z.shape[:-1])
+        # if not self.disregard_time:
+        heatmap = heat_values.reshape(Y.shape[:2])
+        # else:
+        #     heatmap = heat_values
 
         plt.figure()
         plt.imshow(heatmap, cmap='jet')
+        plt.colorbar()
         plt.show()
 
 

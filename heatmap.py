@@ -129,7 +129,8 @@ class HeatmapModel():
         for i in range(sample_scores.shape[0]):
             feature_list += [{
                     "type": "Feature",
-                    "properties": {"mag": float("%.6f" % (sample_scores[i]*1000000)), "time": time[i]},
+                    # "properties": {"mag": float("%.6f" % (sample_scores[i]*1000000)), "time": time[i]},
+                    "properties": {"mag": 1.0, "time": time[i]},
                     "geometry": {
                         "type": "Point",
                         "coordinates": [float("%.6f" % lng[i]), float("%.6f" % lat[i]), 0]  # TODO lat, lng is flipped
@@ -158,8 +159,8 @@ class HeatmapModel():
         total_score, _, _ = self.aggregator.get_infection_likelihood(X_track)
         _, likelihoods, sorted_indices = self.aggregator.get_infection_likelihood(X_Places)
 
-        total_score *= 1000000
-        likelihoods *= 1000000
+        # total_score *= 1000000
+        # likelihoods *= 1000000
 
         most_risky_places = []
 
@@ -196,5 +197,5 @@ if __name__ == "__main__":
         js = hm.get_heatmap()
         print("Done. Saving to json file...")
         with open("precomputed_heatmap_%.6d_samples.json" % ns, 'w') as f:
-            json.dump(js, f)
+            json.dump(js, f, indent=4)
         print("Done")

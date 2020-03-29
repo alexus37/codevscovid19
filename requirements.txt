@@ -1,0 +1,9 @@
+geopy==1.21.0
+numpy==1.18.2
+gpxpy==1.4.0
+tqdm==4.43.0
+pandas==1.0.3
+matplotlib==3.2.1
+pyproj==2.6.0
+Shapely==1.7.0
+scikit_learn==0.22.2.post1

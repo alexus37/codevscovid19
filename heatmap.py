@@ -49,7 +49,8 @@ def find_place_by_id(id, track):
 
 
 class HeatmapModel():
-    def __init__(self, database=None):
+
+    def __init__(self, database=None, bw=10.):
         super().__init__()
         self.database = database or []
         # dataset_file = "zurich_dataset.pkl"
@@ -65,8 +66,10 @@ class HeatmapModel():
         # bandwidht controls the smoothness of the distribution
         # bandwidth = 1.
         # bandwidth = 10.
-        bandwidth = 50.
-        self.aggregator = TimeSmoothAggregatorKernelDensity(bandwidth=bandwidth, disregard_time=True)
+        # bandwidth = 50.
+        self.bandwidth = bw
+
+        self.aggregator = TimeSmoothAggregatorKernelDensity(bandwidth=self.bandwidth, disregard_time=True)
         # self.X[:, 2] = 0  # discard time
 
         self.aggregator.update(self.X)
@@ -120,7 +123,15 @@ class HeatmapModel():
         ## debug plot of the distribution
         # self.aggregator.plot()
 
-        print("Retrieving heatmap samples")
+        cached_fname = os.path.join("precomputed_heatmaps",
+                                    "precomputed_heatmap_bandwidth_%f_%.9d_samples.json" % (self.bandwidth, self.heatmap_sample_count))
+        if os.path.isfile(cached_fname):
+            print("Found cached heatmap.")
+            with open(cached_fname, 'r') as f:
+                heatmap = json.load(f)
+            return heatmap
+
+        print("Did not find cached heatmap. Sampling the distribution")
         samples_locations, sample_scores = self.aggregator.sample_heatmap(self.heatmap_sample_count)
         feature_list = []
         lng, lat = translate_reverse(samples_locations[:, 0], samples_locations[:, 1])
@@ -143,7 +154,9 @@ class HeatmapModel():
             "type": "FeatureCollection",
             "features": feature_list
         }
-        print("Heatmap samples returned")
+        with open(cached_fname, 'w') as f:
+            json.dump(heatmap, f)
+        print("Heatmap samples returned and cached.")
         return heatmap
 
 
@@ -156,11 +169,15 @@ class HeatmapModel():
         # X_track[:,2] = 0
         # X_Places[:,2] = 0
         print(X_track.shape)
-        total_score, _, _ = self.aggregator.get_infection_likelihood(X_track)
+        total_score, ll, _ = self.aggregator.get_infection_likelihood(X_track)
         _, likelihoods, sorted_indices = self.aggregator.get_infection_likelihood(X_Places)
 
-        # total_score *= 1000000
-        # likelihoods *= 1000000
+        ll /= 10
+        total_score /= 10
+        likelihoods /= 10
+
+        total_score = np.exp(ll).sum()
+        likelihoods = np.exp(likelihoods)
 
         most_risky_places = []
 
@@ -188,14 +205,18 @@ class HeatmapModel():
 
 if __name__ == "__main__":
     #precompute sampling of the heatmap
-    hm = HeatmapModel()
-
+    bandwidths = [1, 5, 10, 50]
     num_samples = [100, 1000, 10000, 100000, 1000000]
     for ns in num_samples:
-        print("Computing heatmap for %d samples ..." % ns)
-        hm.heatmap_sample_count = ns
-        js = hm.get_heatmap()
-        print("Done. Saving to json file...")
-        with open("precomputed_heatmap_%.6d_samples.json" % ns, 'w') as f:
-            json.dump(js, f, indent=4)
-        print("Done")
+        for bw in bandwidths:
+            hm = HeatmapModel(bw=bw)
+            print("Computing heatmap for %d samples ..." % ns)
+            hm.heatmap_sample_count = ns
+            js = hm.get_heatmap()
+            print("Done. Saving to json file...")
+
+            with open( os.path.join("precomputed_heatmaps",
+                                    "precomputed_heatmap_bandwidth_%f_%.9d_samples.json" % (bw, ns)), 'w') as f:
+                json.dump(js, f, indent=4)
+            print("Done")
+

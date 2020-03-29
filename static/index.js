@@ -537,6 +537,40 @@ require([
     map.add(placeVisitsLayer);
   };
 
+  const addDebugLayer = places => {
+    const template = {
+      // autocasts as new PopupTemplate()
+      title: "{NAME}"
+    };
+    const debugLayer = new FeatureLayer({
+      // URL to the service
+      source: places,
+      objectIdField: "OBJECTID",
+      fields: [
+        {
+          name: "OBJECTID",
+          type: "oid"
+        },
+        {
+          name: "NAME",
+          type: "string"
+        }
+      ],
+      renderer: {
+        type: "simple", // autocasts as new SimpleRenderer()
+        symbol: {
+          type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+          size: 5,
+          color: [255, 0, 0],
+          outline: null
+        }
+      },
+      outFields: ["*"],
+      popupTemplate: template
+    });
+    map.add(debugLayer);
+  };
+
   const addActivitySegment = graphics => {
     if (activitySegmentsLayer) {
       map.remove(activitySegmentsLayer);
@@ -565,53 +599,116 @@ require([
       }
     });
 
-    map.layers.add(activitySegmentsLayer);
+    // map.layers.add(activitySegmentsLayer);
     map.layers.add(activitySegmentsLayerPath);
+  };
+
+  const addAllLocations = traj => {
+    var points = [];
+    addAllLocationsParser(traj.timelineObjects, points);
+    console.log(points.length);
+    addDebugLayer(points);
+  };
+
+  const addAllLocationsParser = (traj, points) => {
+    if (traj instanceof Array) {
+      traj.map(el => addAllLocationsParser(el, points));
+    } else if ("latE7" in traj) {
+      points.push({
+        geometry: {
+          type: "point",
+          latitude: traj["latE7"] / 1e7,
+          longitude: traj["lngE7"] / 1e7
+        },
+        attributes: {
+          name: JSON.stringify(traj)
+        }
+      });
+    } else if ("latitudeE7" in traj) {
+      points.push({
+        geometry: {
+          type: "point",
+          latitude: traj["latitudeE7"] / 1e7,
+          longitude: traj["longitudeE7"] / 1e7
+        },
+        attributes: {
+          name: JSON.stringify(traj)
+        }
+      });
+    } else {
+      for (var obj of Object.values(traj)) {
+        if (obj instanceof Object) {
+          addAllLocationsParser(obj, points);
+        }
+      }
+    }
+  };
+
+  const parsePlaceVisit = placeVisit => {
+    return {
+      geometry: {
+        type: "point",
+        latitude: placeVisit.location.latitudeE7 / 1e7,
+        longitude: placeVisit.location.longitudeE7 / 1e7
+      },
+      attributes: {
+        ...placeVisit.duration,
+        placeId: placeVisit.location.placeId,
+        name: placeVisit.location.name
+      }
+    };
+  };
+
+  const parseActivitySegment = activitySegment => {
+    const longE7toPoint = obj => [obj.latitudeE7 / 1e7, obj.longitudeE7 / 1e7];
+    const shortE7toPoint = obj => [obj.latE7 / 1e7, obj.lngE7 / 1e7];
+
+    if (
+      "simplifiedRawPath" in activitySegment &&
+      "waypointPath" in activitySegment
+    ) {
+      console.log("raw path and waypoint path");
+    }
+
+    var paths = [];
+    paths.push(longE7toPoint(activitySegment.startLocation));
+    if ("simplifiedRawPath" in activitySegment) {
+      paths.push(
+        activitySegment.simplifiedRawPath.points.map(point =>
+          shortE7toPoint(point)
+        )
+      );
+    } else {
+      paths.push(
+        activitySegment.waypointPath.waypoints.map(point =>
+          shortE7toPoint(point)
+        )
+      );
+    }
+    paths.push(longE7toPoint(activitySegment.endLocation));
+
+    return {
+      geometry: webMercatorUtils.geographicToWebMercator({
+        paths
+      }),
+      type: "polyline",
+      spatialReference: {
+        wkid: 4326
+      },
+      attributes: {
+        color: activityColorMap[activitySegment.activityType]
+      }
+    };
   };
 
   const updateTrajectory = traj => {
     let places = traj["timelineObjects"].filter(obj => obj["placeVisit"]);
     let tracks = traj["timelineObjects"].filter(obj => obj["activitySegment"]);
-    places = places.map(place => ({
-      geometry: {
-        type: "point",
-        latitude: place["placeVisit"]["location"]["latitudeE7"] / 10000000,
-        longitude: place["placeVisit"]["location"]["longitudeE7"] / 10000000
-      },
-      attributes: {
-        ...place["placeVisit"]["duration"],
-        placeId: place["placeVisit"]["location"]["placeId"],
-        name: place["placeVisit"]["location"]["name"]
-      }
-    }));
+    places = places.map(place => parsePlaceVisit(place.placeVisit));
     addPlaceVisits(places);
 
-    tracks = tracks
-      .filter(
-        track =>
-          track["activitySegment"] &&
-          track["activitySegment"]["simplifiedRawPath"] &&
-          track["activitySegment"]["simplifiedRawPath"]["points"] &&
-          track["activitySegment"]["simplifiedRawPath"]["points"].length > 5
-      )
-      .map(track => ({
-        attributes: {
-          color: activityColorMap[track["activitySegment"]["activityType"]]
-        },
-        geometry: webMercatorUtils.geographicToWebMercator({
-          paths: [
-            track["activitySegment"]["simplifiedRawPath"]["points"].map(
-              point => {
-                return [point["lngE7"] / 10000000, point["latE7"] / 10000000];
-              }
-            )
-          ],
-          type: "polyline",
-          spatialReference: {
-            wkid: 4326
-          }
-        })
-      }));
+    tracks = tracks.map(track => parseActivitySegment(track.activitySegment));
+    tracks = tracks.parseActivitySegment(track.activitySegment);
     addActivitySegment(tracks);
   };
 
@@ -753,6 +850,7 @@ require([
   healthyDropzone.on("success", function(file, res) {
     console.log("Great success.");
     var resObject = JSON.parse(res);
+    addAllLocations(resObject.trajectory);
     updateTrajectory(resObject.trajectory);
     uiHandler(resObject.response);
   });

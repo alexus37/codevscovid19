@@ -120,7 +120,8 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
         if self.disregard_time:
             X_track = X_track[:, :2]
         # self.aggregator = KernelDensity()
-        likelihoods = np.exp(self.aggregator.score_samples(X_track))
+        # likelihoods = np.exp(self.aggregator.score_samples(X_track))
+        likelihoods = self.aggregator.score_samples(X_track)
 
         total_score = np.sum(likelihoods)
         order = np.argsort(likelihoods)[::-1]
@@ -130,13 +131,14 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
         # self.aggregator = KernelDensity()
         rand_state = np.random.RandomState(0)
         heatmap_samples = self.aggregator.sample(num_samples, rand_state)
-        sample_scores = np.exp(self.aggregator.score_samples(heatmap_samples))
+        sample_scores = self.aggregator.score_samples(heatmap_samples)
+        # sample_scores = np.exp(self.aggregator.score_samples(heatmap_samples))
         if self.disregard_time:
             heatmap_samples = np.concatenate([heatmap_samples, np.ones(shape=(heatmap_samples.shape[0],1 ), dtype=heatmap_samples.dtype)], axis=1)
         heatmap_samples = self._scale_input(heatmap_samples)
         return heatmap_samples, sample_scores
 
-    def plot(self):
+    def plot(self, grid_resolution=1000):
         from matplotlib import pyplot as plt
         x_min = self.X[:, 0].min()
         x_max = self.X[:, 0].max()
@@ -148,7 +150,7 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
             z_min = 0
             z_max = 1
 
-        grid_size = (x_max - x_min)/100
+        grid_size = (x_max - x_min)/grid_resolution
 
         x_grid = np.arange(x_min, x_max, grid_size)
         y_grid = np.arange(y_min, y_max, grid_size)
@@ -166,7 +168,8 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
             xyz = np.vstack([Y.ravel(), X.ravel()]).T
 
         print("Computing the heatmap values for the grid")
-        heat_values = np.exp(self.aggregator.score_samples(xyz))
+        # heat_values = np.exp(self.aggregator.score_samples(xyz))
+        heat_values = self.aggregator.score_samples(xyz)
 
         print("Values computed")
 
@@ -181,6 +184,14 @@ class TimeSmoothAggregatorKernelDensity(TimeSmoothAggregatorBase):
         plt.figure()
         plt.imshow(heatmap, cmap='jet')
         plt.colorbar()
+        plt.figure()
+        plt.plot(self.X[:, 0], self.X[:, 1], '.')
+
+        plt.figure()
+        # print("Sampling heatmap")
+        # points, scores = self.sample_heatmap(1000)
+        # print("Done")
+        # plt.plot(points[:, 0], points[:, 1], '.')
         plt.show()
 
 

@@ -617,7 +617,6 @@ require([
 
   const renderer = {
     type: "heatmap",
-    field: "mag",
     colorStops: [
       { ratio: 0, color: "rgba(58, 217, 133, 0)" },
       { ratio: 0.2, color: "rgba(58, 217, 133, 0.1)" },
@@ -626,8 +625,8 @@ require([
       { ratio: 1, color: "rgba(14, 255, 255, 0.3)" }
     ],
     minPixelIntensity: 0,
-    maxPixelIntensity: 100,
-    blurRadius: 15
+    maxPixelIntensity: 2000,
+    blurRadius: 30
   };
 
   const geojsonLayer = new GeoJSONLayer({

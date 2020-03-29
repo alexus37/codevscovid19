@@ -64,13 +64,13 @@ class HeatmapModel():
         self.X = np.array([x, y, time]).T
         # bandwidht controls the smoothness of the distribution
         # bandwidth = 1.
-        bandwidth = 10.
-        # bandwidth = 50.
+        # bandwidth = 10.
+        bandwidth = 50.
         self.aggregator = TimeSmoothAggregatorKernelDensity(bandwidth=bandwidth, disregard_time=True)
         # self.X[:, 2] = 0  # discard time
 
         self.aggregator.update(self.X)
-        self.heatmap_sample_count = 100
+        self.heatmap_sample_count = 1000
 
     def track2matrix(self, track):
         point_list = []
@@ -129,7 +129,8 @@ class HeatmapModel():
         for i in range(sample_scores.shape[0]):
             feature_list += [{
                     "type": "Feature",
-                    "properties": {"mag": float("%.6f" % (sample_scores[i]*1000000)), "time": time[i]},
+                    # "properties": {"mag": float("%.6f" % (sample_scores[i]*1000000)), "time": time[i]},
+                    "properties": {"mag": 1.0, "time": time[i]},
                     "geometry": {
                         "type": "Point",
                         "coordinates": [float("%.6f" % lng[i]), float("%.6f" % lat[i]), 0]  # TODO lat, lng is flipped
@@ -158,8 +159,8 @@ class HeatmapModel():
         total_score, _, _ = self.aggregator.get_infection_likelihood(X_track)
         _, likelihoods, sorted_indices = self.aggregator.get_infection_likelihood(X_Places)
 
-        total_score *= 1000000
-        likelihoods *= 1000000
+        # total_score *= 1000000
+        # likelihoods *= 1000000
 
         most_risky_places = []
 
@@ -183,3 +184,18 @@ class HeatmapModel():
         # self.update_database(trajectory)
         print(response)
         return response
+
+
+if __name__ == "__main__":
+    #precompute sampling of the heatmap
+    hm = HeatmapModel()
+
+    num_samples = [100, 1000, 10000, 100000, 1000000]
+    for ns in num_samples:
+        print("Computing heatmap for %d samples ..." % ns)
+        hm.heatmap_sample_count = ns
+        js = hm.get_heatmap()
+        print("Done. Saving to json file...")
+        with open("precomputed_heatmap_%.6d_samples.json" % ns, 'w') as f:
+            json.dump(js, f, indent=4)
+        print("Done")

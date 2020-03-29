@@ -1,4 +1,68 @@
 Dropzone.autoDiscover = false;
+
+var haversine = (function() {
+  var RADII = {
+    km: 6371,
+    mile: 3960,
+    meter: 6371000,
+    nmi: 3440
+  };
+
+  // convert to radians
+  var toRad = function(num) {
+    return (num * Math.PI) / 180;
+  };
+
+  // convert coordinates to standard format based on the passed format option
+  var convertCoordinates = function(format, coordinates) {
+    switch (format) {
+      case "[lat,lon]":
+        return { latitude: coordinates[0], longitude: coordinates[1] };
+      case "[lon,lat]":
+        return { latitude: coordinates[1], longitude: coordinates[0] };
+      case "{lon,lat}":
+        return { latitude: coordinates.lat, longitude: coordinates.lon };
+      case "{lat,lng}":
+        return { latitude: coordinates.lat, longitude: coordinates.lng };
+      case "geojson":
+        return {
+          latitude: coordinates.geometry.coordinates[1],
+          longitude: coordinates.geometry.coordinates[0]
+        };
+      default:
+        return coordinates;
+    }
+  };
+
+  return function haversine(startCoordinates, endCoordinates, options) {
+    options = options || {};
+
+    var R = options.unit in RADII ? RADII[options.unit] : RADII.km;
+
+    var start = convertCoordinates(options.format, startCoordinates);
+    var end = convertCoordinates(options.format, endCoordinates);
+
+    var dLat = toRad(end.latitude - start.latitude);
+    var dLon = toRad(end.longitude - start.longitude);
+    var lat1 = toRad(start.latitude);
+    var lat2 = toRad(end.latitude);
+
+    var a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    if (options.threshold) {
+      return options.threshold > R * c;
+    }
+
+    return R * c;
+  };
+})();
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = haversine;
+}
 require([
   "esri/Map",
   "esri/layers/GeoJSONLayer",
@@ -606,7 +670,6 @@ require([
   const addAllLocations = traj => {
     var points = [];
     addAllLocationsParser(traj.timelineObjects, points);
-    console.log(points.length);
     addDebugLayer(points);
   };
 
@@ -659,42 +722,61 @@ require([
     };
   };
 
+  const orderPath = path => {
+    const startLocation = path.shift();
+    // const endLocation = path.pop();
+    orderedPath = [];
+    orderedPath.push(startLocation);
+    while (path.length)
+      orderedPath.push(
+        path
+          .sort(
+            (a, b) =>
+              haversine(orderedPath[orderedPath.length - 1], a) -
+              haversine(orderedPath[orderedPath.length - 1], b)
+          )
+          .shift()
+      );
+    // orderedPath.push(endLocation);
+    return orderedPath;
+  };
+
   const parseActivitySegment = activitySegment => {
-    const longE7toPoint = obj => [obj.latitudeE7 / 1e7, obj.longitudeE7 / 1e7];
-    const shortE7toPoint = obj => [obj.latE7 / 1e7, obj.lngE7 / 1e7];
+    const longE7toPoint = obj => [obj.longitudeE7 / 1e7, obj.latitudeE7 / 1e7];
+    const shortE7toPoint = obj => [obj.lngE7 / 1e7, obj.latE7 / 1e7];
 
-    if (
-      "simplifiedRawPath" in activitySegment &&
-      "waypointPath" in activitySegment
-    ) {
-      console.log("raw path and waypoint path");
-    }
+    var path = [];
+    const addToPathShort = list =>
+      path.push(...list.map(loc => shortE7toPoint(loc)));
+    const addToPathLong = list =>
+      path.push(...list.map(loc => longE7toPoint(loc)));
 
-    var paths = [];
-    paths.push(longE7toPoint(activitySegment.startLocation));
+    path.push(longE7toPoint(activitySegment.startLocation));
+    // path.push(longE7toPoint(activitySegment.endLocation));
+
     if ("simplifiedRawPath" in activitySegment) {
-      paths.push(
-        activitySegment.simplifiedRawPath.points.map(point =>
-          shortE7toPoint(point)
-        )
-      );
-    } else {
-      paths.push(
-        activitySegment.waypointPath.waypoints.map(point =>
-          shortE7toPoint(point)
-        )
-      );
+      addToPathShort(activitySegment.simplifiedRawPath.points);
     }
-    paths.push(longE7toPoint(activitySegment.endLocation));
+    if ("waypointPath" in activitySegment) {
+      addToPathShort(activitySegment.waypointPath.waypoints);
+    }
+    if ("transitPath" in activitySegment) {
+      addToPathLong(activitySegment.transitPath.transitStops);
+    }
+
+    // path.push(longE7toPoint(activitySegment.startLocation));
+    path.push(longE7toPoint(activitySegment.endLocation));
+
+    path = orderPath(path);
 
     return {
       geometry: webMercatorUtils.geographicToWebMercator({
-        paths
+        paths: [path],
+        type: "polyline",
+        spatialReference: {
+          wkid: 4326
+        }
       }),
-      type: "polyline",
-      spatialReference: {
-        wkid: 4326
-      },
       attributes: {
         color: activityColorMap[activitySegment.activityType]
       }
@@ -708,7 +790,6 @@ require([
     addPlaceVisits(places);
 
     tracks = tracks.map(track => parseActivitySegment(track.activitySegment));
-    tracks = tracks.parseActivitySegment(track.activitySegment);
     addActivitySegment(tracks);
   };
 
@@ -801,13 +882,19 @@ require([
   const uiHandler = response => {
     document.getElementById("join").style.display = "None";
     document.getElementById("submissions").style.display = "None";
-    document.getElementById("map").classList.add("map-post");
-    document.getElementById("map").classList.remove("map-pre");
+    let map = document.getElementById("map");
+    map.classList.add("map-post");
+    map.classList.remove("map-pre");
     if (response.message !== undefined) {
       document.getElementById("thanksMessage").style.display = "block";
     }
     if (response.risk_value !== undefined) {
       document.getElementById("risk").style.display = "block";
+      let level = ["safe", "warning", "critical"];
+      let riskValue = document.getElementById("riskValue");
+      let risk_value = response.risk_value;
+      riskValue.classList.add(level[Math.floor(level.length * risk_value)]);
+      riskValue.innerHTML = risk_value.toFixed(2);
       document.getElementById(
         "riskValue"
       ).innerHTML = response.risk_value.toFixed(2);
@@ -848,7 +935,6 @@ require([
   });
 
   healthyDropzone.on("success", function(file, res) {
-    console.log("Great success.");
     var resObject = JSON.parse(res);
     addAllLocations(resObject.trajectory);
     updateTrajectory(resObject.trajectory);

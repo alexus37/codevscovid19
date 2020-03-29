@@ -8,6 +8,7 @@ body {
   width: 100%;
   flex-direction: column;
   align-items: center;
+  font-size: large;
 }
 
 #content {
@@ -93,10 +94,9 @@ body {
 
 #risk {
   display: none;
-  /* margin-left: 50px;
-  margin-right: 50px;
-  margin-bottom: 50px;
-  margin-top: 30px; */
+}
+
+.bottom {
   margin: 50px;
 }
 
@@ -106,4 +106,16 @@ body {
 
 #riskPlacesTable {
   cursor: pointer;
+}
+
+.safe {
+  color: darkseagreen;
+}
+
+.warning {
+  color: darkkhaki;
+}
+
+.critical {
+  color: indianred;
 }

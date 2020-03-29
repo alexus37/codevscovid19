@@ -132,7 +132,7 @@ class HeatmapModel():
                     "properties": {"mag": float("%.6f" % (sample_scores[i]*1000000)), "time": time[i]},
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [float("%.6f" % lat[i]), float("%.6f" % lng[i]), 0]  # TODO lat, lng is flipped
+                        "coordinates": [float("%.6f" % lng[i]), float("%.6f" % lat[i]), 0]  # TODO lat, lng is flipped
                     }
             }]
             # print("Sample %d score %f" % (i, sample_scores[i]*1000000))

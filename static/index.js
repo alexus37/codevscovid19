@@ -1,4 +1,68 @@
 Dropzone.autoDiscover = false;
+
+var haversine = (function() {
+  var RADII = {
+    km: 6371,
+    mile: 3960,
+    meter: 6371000,
+    nmi: 3440
+  };
+
+  // convert to radians
+  var toRad = function(num) {
+    return (num * Math.PI) / 180;
+  };
+
+  // convert coordinates to standard format based on the passed format option
+  var convertCoordinates = function(format, coordinates) {
+    switch (format) {
+      case "[lat,lon]":
+        return { latitude: coordinates[0], longitude: coordinates[1] };
+      case "[lon,lat]":
+        return { latitude: coordinates[1], longitude: coordinates[0] };
+      case "{lon,lat}":
+        return { latitude: coordinates.lat, longitude: coordinates.lon };
+      case "{lat,lng}":
+        return { latitude: coordinates.lat, longitude: coordinates.lng };
+      case "geojson":
+        return {
+          latitude: coordinates.geometry.coordinates[1],
+          longitude: coordinates.geometry.coordinates[0]
+        };
+      default:
+        return coordinates;
+    }
+  };
+
+  return function haversine(startCoordinates, endCoordinates, options) {
+    options = options || {};
+
+    var R = options.unit in RADII ? RADII[options.unit] : RADII.km;
+
+    var start = convertCoordinates(options.format, startCoordinates);
+    var end = convertCoordinates(options.format, endCoordinates);
+
+    var dLat = toRad(end.latitude - start.latitude);
+    var dLon = toRad(end.longitude - start.longitude);
+    var lat1 = toRad(start.latitude);
+    var lat2 = toRad(end.latitude);
+
+    var a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    if (options.threshold) {
+      return options.threshold > R * c;
+    }
+
+    return R * c;
+  };
+})();
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = haversine;
+}
 require([
   "esri/Map",
   "esri/layers/GeoJSONLayer",
@@ -537,6 +601,40 @@ require([
     map.add(placeVisitsLayer);
   };
 
+  const addDebugLayer = places => {
+    const template = {
+      // autocasts as new PopupTemplate()
+      title: "{NAME}"
+    };
+    const debugLayer = new FeatureLayer({
+      // URL to the service
+      source: places,
+      objectIdField: "OBJECTID",
+      fields: [
+        {
+          name: "OBJECTID",
+          type: "oid"
+        },
+        {
+          name: "NAME",
+          type: "string"
+        }
+      ],
+      renderer: {
+        type: "simple", // autocasts as new SimpleRenderer()
+        symbol: {
+          type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+          size: 5,
+          color: [255, 0, 0],
+          outline: null
+        }
+      },
+      outFields: ["*"],
+      popupTemplate: template
+    });
+    map.add(debugLayer);
+  };
+
   const addActivitySegment = graphics => {
     if (activitySegmentsLayer) {
       map.remove(activitySegmentsLayer);
@@ -565,53 +663,133 @@ require([
       }
     });
 
-    map.layers.add(activitySegmentsLayer);
+    // map.layers.add(activitySegmentsLayer);
     map.layers.add(activitySegmentsLayerPath);
+  };
+
+  const addAllLocations = traj => {
+    var points = [];
+    addAllLocationsParser(traj.timelineObjects, points);
+    addDebugLayer(points);
+  };
+
+  const addAllLocationsParser = (traj, points) => {
+    if (traj instanceof Array) {
+      traj.map(el => addAllLocationsParser(el, points));
+    } else if ("latE7" in traj) {
+      points.push({
+        geometry: {
+          type: "point",
+          latitude: traj["latE7"] / 1e7,
+          longitude: traj["lngE7"] / 1e7
+        },
+        attributes: {
+          name: JSON.stringify(traj)
+        }
+      });
+    } else if ("latitudeE7" in traj) {
+      points.push({
+        geometry: {
+          type: "point",
+          latitude: traj["latitudeE7"] / 1e7,
+          longitude: traj["longitudeE7"] / 1e7
+        },
+        attributes: {
+          name: JSON.stringify(traj)
+        }
+      });
+    } else {
+      for (var obj of Object.values(traj)) {
+        if (obj instanceof Object) {
+          addAllLocationsParser(obj, points);
+        }
+      }
+    }
+  };
+
+  const parsePlaceVisit = placeVisit => {
+    return {
+      geometry: {
+        type: "point",
+        latitude: placeVisit.location.latitudeE7 / 1e7,
+        longitude: placeVisit.location.longitudeE7 / 1e7
+      },
+      attributes: {
+        ...placeVisit.duration,
+        placeId: placeVisit.location.placeId,
+        name: placeVisit.location.name
+      }
+    };
+  };
+
+  const orderPath = path => {
+    const startLocation = path.shift();
+    // const endLocation = path.pop();
+    orderedPath = [];
+    orderedPath.push(startLocation);
+    while (path.length)
+      orderedPath.push(
+        path
+          .sort(
+            (a, b) =>
+              haversine(orderedPath[orderedPath.length - 1], a) -
+              haversine(orderedPath[orderedPath.length - 1], b)
+          )
+          .shift()
+      );
+    // orderedPath.push(endLocation);
+    return orderedPath;
+  };
+
+  const parseActivitySegment = activitySegment => {
+    const longE7toPoint = obj => [obj.longitudeE7 / 1e7, obj.latitudeE7 / 1e7];
+    const shortE7toPoint = obj => [obj.lngE7 / 1e7, obj.latE7 / 1e7];
+
+    var path = [];
+    const addToPathShort = list =>
+      path.push(...list.map(loc => shortE7toPoint(loc)));
+    const addToPathLong = list =>
+      path.push(...list.map(loc => longE7toPoint(loc)));
+
+    path.push(longE7toPoint(activitySegment.startLocation));
+    // path.push(longE7toPoint(activitySegment.endLocation));
+
+    if ("simplifiedRawPath" in activitySegment) {
+      addToPathShort(activitySegment.simplifiedRawPath.points);
+    }
+    if ("waypointPath" in activitySegment) {
+      addToPathShort(activitySegment.waypointPath.waypoints);
+    }
+    if ("transitPath" in activitySegment) {
+      addToPathLong(activitySegment.transitPath.transitStops);
+    }
+
+    // path.push(longE7toPoint(activitySegment.startLocation));
+    path.push(longE7toPoint(activitySegment.endLocation));
+
+    path = orderPath(path);
+
+    return {
+      geometry: webMercatorUtils.geographicToWebMercator({
+        paths: [path],
+        type: "polyline",
+        spatialReference: {
+          wkid: 4326
+        }
+      }),
+      attributes: {
+        color: activityColorMap[activitySegment.activityType]
+      }
+    };
   };
 
   const updateTrajectory = traj => {
     let places = traj["timelineObjects"].filter(obj => obj["placeVisit"]);
     let tracks = traj["timelineObjects"].filter(obj => obj["activitySegment"]);
-    places = places.map(place => ({
-      geometry: {
-        type: "point",
-        latitude: place["placeVisit"]["location"]["latitudeE7"] / 10000000,
-        longitude: place["placeVisit"]["location"]["longitudeE7"] / 10000000
-      },
-      attributes: {
-        ...place["placeVisit"]["duration"],
-        placeId: place["placeVisit"]["location"]["placeId"],
-        name: place["placeVisit"]["location"]["name"]
-      }
-    }));
+    places = places.map(place => parsePlaceVisit(place.placeVisit));
     addPlaceVisits(places);
 
-    tracks = tracks
-      .filter(
-        track =>
-          track["activitySegment"] &&
-          track["activitySegment"]["simplifiedRawPath"] &&
-          track["activitySegment"]["simplifiedRawPath"]["points"] &&
-          track["activitySegment"]["simplifiedRawPath"]["points"].length > 5
-      )
-      .map(track => ({
-        attributes: {
-          color: activityColorMap[track["activitySegment"]["activityType"]]
-        },
-        geometry: webMercatorUtils.geographicToWebMercator({
-          paths: [
-            track["activitySegment"]["simplifiedRawPath"]["points"].map(
-              point => {
-                return [point["lngE7"] / 10000000, point["latE7"] / 10000000];
-              }
-            )
-          ],
-          type: "polyline",
-          spatialReference: {
-            wkid: 4326
-          }
-        })
-      }));
+    tracks = tracks.map(track => parseActivitySegment(track.activitySegment));
     addActivitySegment(tracks);
   };
 
@@ -704,13 +882,19 @@ require([
   const uiHandler = response => {
     document.getElementById("join").style.display = "None";
     document.getElementById("submissions").style.display = "None";
-    document.getElementById("map").classList.add("map-post");
-    document.getElementById("map").classList.remove("map-pre");
+    let map = document.getElementById("map");
+    map.classList.add("map-post");
+    map.classList.remove("map-pre");
     if (response.message !== undefined) {
       document.getElementById("thanksMessage").style.display = "block";
     }
     if (response.risk_value !== undefined) {
       document.getElementById("risk").style.display = "block";
+      let level = ["safe", "warning", "critical"];
+      let riskValue = document.getElementById("riskValue");
+      let risk_value = response.risk_value;
+      riskValue.classList.add(level[Math.floor(level.length * risk_value)]);
+      riskValue.innerHTML = risk_value.toFixed(2);
       document.getElementById(
         "riskValue"
       ).innerHTML = response.risk_value.toFixed(2);
@@ -751,8 +935,8 @@ require([
   });
 
   healthyDropzone.on("success", function(file, res) {
-    console.log("Great success.");
     var resObject = JSON.parse(res);
+    addAllLocations(resObject.trajectory);
     updateTrajectory(resObject.trajectory);
     uiHandler(resObject.response);
   });

@@ -23,7 +23,7 @@
                     <form action="/upload" class="dropzone" id="healthy-dropzone">
                         <input type="file" name="filearg" hidden="true" />
                         <input type="checkbox" name="infected"  hidden="true" />
-                        <div class="dz-message">Drop your location history here, to calculate your infection risk.</div>
+                        <div class="dz-message">Still feeling good?<br />Drop your location history here to calculate your infection risk.</div>
                     </form>
                 </div>
                 <div id="infected-upload" class="submission">
@@ -33,22 +33,22 @@
                         method="post">
                         <input type="file" name="filearg" hidden="true" />
                         <input type="checkbox" name="infected" checked hidden="true" />
-                        <div class="dz-message">Infected with Corona Virus? Drop your location history here and help others to stay save.</div>
+                        <div class="dz-message">Infected with Corona Virus?<br /> Drop your location history here and help others to stay safe.</div>
                     </form>
                 </div>
             </div>
             <div id="thanksMessage">
                 <h1>Thank you for your help!</h1>
             </div>
-            <div id="join">
-                <h1>Join in and help to fight COVID-19</h1>
+            <div id="join" class="bottom">
+                <h1>Join in and help us fight COVID-19</h1>
                 <p>
                     If you are healthy upload your google location history from last month and
                     we compare it to our database and compute you some risk information. If you are sick, upload your
                     your history as well and help other to know if they are in danger. Get well soon!
                 </p>
             </div>
-            <div id="risk">
+            <div id="risk" class="bottom">
                 <div id="riskContainer">
                     <h1>RISK FACTOR:</h1> <h1 id="riskValue">0.0</h1>
                 </div>
@@ -69,9 +69,21 @@
                 <div>
                 </div>
             </div>
-            <div id="risk-detail">
+            <div id="risk-detail" class="bottom">
               <p>
-                Info about the number
+                Once you have uploaded you location history we compare you
+                personal location history with the data we gathered on all the
+                places you have visited and passed through. Then we compute a
+                risk value, based on you personal path. If you crossed paths
+                with an infected person or in general with many people this will
+                increase the risk value.
+                <br /><br />
+                <h2>Important</h2>
+                <b>
+                  The risk value does not represent a scientifically verified
+                  quantity, at this point it is just a value that we compute in
+                  good faith.
+                </b>
               </p>
             </div>
         </div>

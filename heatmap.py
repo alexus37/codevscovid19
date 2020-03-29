@@ -70,8 +70,6 @@ class HeatmapModel():
         place_location_list = []
         place_id_list = []
         # Set up projections
-        p_ll = pyproj.Proj(init='epsg:4326')
-        p_mt = pyproj.Proj(init='epsg:3857') # metric; same as EPSG:900913
         print("Parsing files into matrix")
         for traj_entery in tqdm(track["timelineObjects"]):
             # only use lines so far

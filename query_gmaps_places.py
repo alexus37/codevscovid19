@@ -6,6 +6,7 @@ import sys
 import requests
 from tqdm import tqdm
 import numpy as np
+from latlng_to_meters import translate, translate_reverse
 
 ZURICH_LEFT = 8.5099
 ZURICH_RIGHT = 8.5683
@@ -40,14 +41,16 @@ def latlong2meters_zurich(lat, long):
 
     xs = []
     ys = []
-    for i in range(lat.size):
-        if i % 100 == 0:
-            print("Converted %d/%d." % (i, lat.size))
-        point = pyproj.transform(p_ll, p_mt, lat[i], long[i])
-        xs += [point[0] - s[0]]
-        ys += [point[1] - s[1]]
+    points = translate(lat, long)  # vectorized
+    return points[0] - s[0], points[1] - s[1]
+    # for i in range(lat.size):
+    #     if i % 100 == 0:
+    #         print("Converted %d/%d." % (i, lat.size))
+    #     point = translate(lat[i], long[i])  # I previously forgot the indices. Now the loop version is also fast..
+    #     xs += [point[0] - s[0]]
+    #    ys += [point[1] - s[1]]
+    # return np.array(xs), np.array(ys)
 
-    return np.array(xs), np.array(ys)
 
 
 def meters2latlong_zurich(x, y):
@@ -67,7 +70,7 @@ def meters2latlong_zurich(x, y):
     for i in range(x.size):
         if i % 100 == 0:
             print("Converted %d/%d." % (i, x.size))
-        point = pyproj.transform(p_mt, p_ll, x[i] + s[0], y[i] + s[1])
+        point = translate_reverse(x[i] + s[0], y[i] + s[1])
         lat += [point[0]]
         long += [point[1]]
 

@@ -26,6 +26,6 @@ def translate(latitude, longitude):
 
 def translate_reverse(x, y):
     longitude = top_left[1] + ((x - top_left_m[0]) * (top_right[1] - top_left[1]) / (top_right_m[0] - top_left_m[0]))
-    latitude =  top_left[0] +  ((-y + top_left_m[1]) * (bottom_left[0] - top_left[0]) / (bottom_left_m[1] - top_left_m[1]))
+    latitude =  top_left[0] +  ((-y + top_left_m[1]) * (top_left[0] - bottom_left[0]) / (bottom_left_m[1] - top_left_m[1]))
 
-    return (latitude, longitude)
+    return (longitude, latitude)

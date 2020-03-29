@@ -118,7 +118,7 @@ class HeatmapModel():
 
     def get_heatmap(self):
         ## debug plot of the distribution
-        self.aggregator.plot()
+        # self.aggregator.plot()
 
         print("Retrieving heatmap samples")
         samples_locations, sample_scores = self.aggregator.sample_heatmap(self.heatmap_sample_count)
@@ -183,3 +183,18 @@ class HeatmapModel():
         # self.update_database(trajectory)
         print(response)
         return response
+
+
+if __name__ == "__main__":
+    #precompute sampling of the heatmap
+    hm = HeatmapModel()
+
+    num_samples = [100, 1000, 10000, 100000, 1000000]
+    for ns in num_samples:
+        print("Computing heatmap for %d samples ..." % ns)
+        hm.heatmap_sample_count = ns
+        js = hm.get_heatmap()
+        print("Done. Saving to json file...")
+        with open("precomputed_heatmap_%.6d_samples.json" % ns, 'w') as f:
+            json.dump(js, f)
+        print("Done")

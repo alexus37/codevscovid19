@@ -892,8 +892,8 @@ require([
       document.getElementById("risk").style.display = "block";
       let level = ["safe", "warning", "critical"];
       let riskValue = document.getElementById("riskValue");
-      let risk_value = response.risk_value;
-      riskValue.classList.add(level[Math.floor(level.length * risk_value)]);
+      let risk_value = Math.min(response.risk_value, 100);
+      riskValue.classList.add(level[Math.floor(level.length * risk_value / 100)]);
       riskValue.innerHTML = risk_value.toFixed(2);
       document.getElementById(
         "riskValue"
@@ -936,7 +936,7 @@ require([
 
   healthyDropzone.on("success", function(file, res) {
     var resObject = JSON.parse(res);
-    addAllLocations(resObject.trajectory);
+    // addAllLocations(resObject.trajectory);
     updateTrajectory(resObject.trajectory);
     uiHandler(resObject.response);
   });

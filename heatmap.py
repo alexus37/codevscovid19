@@ -52,7 +52,8 @@ class HeatmapModel():
     def __init__(self, database=None):
         super().__init__()
         self.database = database or []
-        dataset_file = "zurich_dataset.pkl"
+        # dataset_file = "zurich_dataset.pkl"
+        dataset_file = "zurich_dataset_all.pkl"
         if not os.path.isfile(dataset_file):
             raise FileNotFoundError("Database does not exist")
         with open(dataset_file, "rb") as f:

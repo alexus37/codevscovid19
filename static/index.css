@@ -37,6 +37,7 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+  height: 150px;
 }
 
 .submission {
@@ -45,7 +46,16 @@ body {
 }
 
 .dropzone {
+  display: flex;
   width: 100%;
+  height: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.dz-message {
+  margin: 0px !important;
 }
 
 .dz-details,

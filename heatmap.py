@@ -172,12 +172,22 @@ class HeatmapModel():
         total_score, ll, _ = self.aggregator.get_infection_likelihood(X_track)
         _, likelihoods, sorted_indices = self.aggregator.get_infection_likelihood(X_Places)
 
-        ll /= 10
-        total_score /= 10
-        likelihoods /= 10
+        ll /= 5
+        total_score /= 5
+        likelihoods /= 5
 
         total_score = np.exp(ll).sum()
         likelihoods = np.exp(likelihoods)
+
+
+        # alternative cumulative likelihood score
+        alternative_total_score = 0
+        for i in range(likelihoods.size-1, -1, -1):
+            alternative_total_score = likelihoods[i] + (1-likelihoods[i])*alternative_total_score
+
+        # to percentage
+        alternative_total_score *= 100
+        likelihoods *= 100
 
         most_risky_places = []
 
@@ -195,7 +205,8 @@ class HeatmapModel():
         # most_risky_places is just the places with the highest risk values
         # maybe just the places in the trajectory and in the sick db
         response = {
-            'risk_value': total_score,
+            # 'risk_value': total_score,
+            'risk_value': alternative_total_score,
             'most_risky_places': most_risky_places
         }
         # self.update_database(trajectory)

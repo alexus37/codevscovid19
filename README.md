@@ -1,4 +1,6 @@
-# codevscovid19
+# Codevscovid19
+
+Here you can see a video explaining the [project](https://youtu.be/0Cu9zd0_aFs).
 
 ## Init
 
@@ -28,15 +30,21 @@ Get the heatmap as json
 # Project Description
 
 ## Inspiration
+
 In recent months, the Covid19 pandemic has shown to lead to death rates of up to 5% in cases of health care overloads. Switzerland is at the moment in a shutdown, trying to circumvent such a situation. There is much uncertainty on how to proceed after the quarantine, we are facing at the moment, since opening of stores and workplaces would lead to another major outbreak. We need effective solutions to enable us to live our daily lives, while still being able to keep the infection curve flat.
+
 ## What it does
+
 By collecting movement profiles of Corona infected people, we are able to compute risk maps for users to avoid areas, which are associated with Corona infections. Furthermore, users can upload their movement profile in order to check their risk of having been contaminated. We compute this risk factor by integrating the risk values of the risk map over the trajectory of the uploaded user data.
 
 The GDPR policy by the EU forced companies to provide an option to users for downloading their user data. We can exploit this for the Google Location History feature, where users can easily retrieve their movement profiles. By uploading their data, infected persons can contribute to up to date risk maps and healthy persons can use our website to evaluate their risk of having been infected based on their movement profile of the last couple of days.
+
 ## How we built it
+
 Based on a collection of Google Location History data sets, we compute a 3D spatiotemporal infection risk map that reflects the risk of being infected when residing at or passing through places on that map. The map can be integrated over a trajectory to yield a risk score. This can be used to recommend users to stay at home or even get tested for SARS-CoV-2.
 
 For the demo, we used GPS tracks in the Zurich area from the OpenStreetMap project. These GPS tracks represent movement profiles of positively tested people and form the basis for the risk map.
+
 ## Challenges we ran into
 
 While, the user data retrieved by the Google Location history

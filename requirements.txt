@@ -1,5 +1,5 @@
 geopy==1.21.0
-numpy==1.18.2
+numpy==1.22.0
 gpxpy==1.4.0
 tqdm==4.43.0
 pandas==1.0.3

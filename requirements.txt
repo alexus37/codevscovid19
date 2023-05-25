@@ -7,4 +7,4 @@ matplotlib==3.2.1
 pyproj==2.6.0
 Shapely==1.7.0
 scikit_learn==0.22.2.post1
-tornado==6.0.4
+tornado==6.3.2
